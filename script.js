@@ -46,6 +46,42 @@ function createNewsItem(article) {
         else if (article.videoUrl.includes('vimeo.com')) {
             const videoId = article.videoUrl.split('vimeo.com/')[1];
             mediaContent = `<iframe src="https://player.vimeo.com/video/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
+        }
+        // Handle Imgur gallery links - Pure video only
+        else if (article.videoUrl.includes('imgur.com/a/')) {
+            const galleryId = article.videoUrl.split('imgur.com/a/')[1];
+            // Pure video player - no logos, no buttons, just video
+            mediaContent = `<video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover; background: #000;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                <source src="https://i.imgur.com/${galleryId}.mp4" type="video/mp4">
+                <source src="https://i.imgur.com/${galleryId}.webm" type="video/webm">
+                <source src="https://i.imgur.com/${galleryId}.gifv" type="video/mp4">
+                <source src="https://i.imgur.com/${galleryId}.mov" type="video/quicktime">
+            </video>`;
+        }
+        // Handle regular Imgur links
+        else if (article.videoUrl.includes('imgur.com/')) {
+            if (article.videoUrl.includes('/a/')) {
+                // Gallery link - pure video only
+                const galleryId = article.videoUrl.split('/a/')[1];
+                mediaContent = `<video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover; background: #000;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                    <source src="https://i.imgur.com/${galleryId}.mp4" type="video/mp4">
+                    <source src="https://i.imgur.com/${galleryId}.webm" type="video/webm">
+                    <source src="https://i.imgur.com/${galleryId}.gifv" type="video/mp4">
+                    <source src="https://i.imgur.com/${galleryId}.mov" type="video/quicktime">
+                </video>`;
+            } else {
+                // Try to get direct video link from Imgur
+                const imgurId = article.videoUrl.split('imgur.com/')[1].split('.')[0];
+                // Try multiple Imgur direct link formats
+                mediaContent = `
+                    <video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                        <source src="https://i.imgur.com/${imgurId}.mp4" type="video/mp4">
+                        <source src="https://i.imgur.com/${imgurId}.webm" type="video/webm">
+                        <source src="https://i.imgur.com/${imgurId}.gifv" type="video/mp4">
+                        <p>Video not supported. <a href="${article.videoUrl}" target="_blank" style="color: #ff6b35;">Click to view on Imgur</a></p>
+                    </video>
+                `;
+            }
         } 
         // Handle direct video files (MP4, WebM, etc.)
         else {
@@ -54,10 +90,25 @@ function createNewsItem(article) {
             const isVideoFile = videoExtensions.some(ext => article.videoUrl.toLowerCase().includes(ext));
             
             if (isVideoFile) {
-                mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.videoUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+                // Determine video type based on extension
+                let videoType = 'video/mp4';
+                if (article.videoUrl.toLowerCase().includes('.webm')) videoType = 'video/webm';
+                else if (article.videoUrl.toLowerCase().includes('.ogg')) videoType = 'video/ogg';
+                else if (article.videoUrl.toLowerCase().includes('.mov')) videoType = 'video/quicktime';
+                else if (article.videoUrl.toLowerCase().includes('.avi')) videoType = 'video/x-msvideo';
+                
+                mediaContent = `<video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                    <source src="${article.videoUrl}" type="${videoType}">
+                    <source src="${article.videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
             } else {
-                // Try as direct video URL
-                mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.videoUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+                // Try as direct video URL with multiple formats
+                mediaContent = `<video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                    <source src="${article.videoUrl}" type="video/mp4">
+                    <source src="${article.videoUrl}" type="video/webm">
+                    Your browser does not support the video tag.
+                </video>`;
             }
         }
     } else if (article.imageUrl) {
@@ -69,7 +120,17 @@ function createNewsItem(article) {
         
         if (isVideoFile) {
             // Handle video in imageUrl field
-            mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.imageUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            let videoType = 'video/mp4';
+            if (article.imageUrl.toLowerCase().includes('.webm')) videoType = 'video/webm';
+            else if (article.imageUrl.toLowerCase().includes('.ogg')) videoType = 'video/ogg';
+            else if (article.imageUrl.toLowerCase().includes('.mov')) videoType = 'video/quicktime';
+            else if (article.imageUrl.toLowerCase().includes('.avi')) videoType = 'video/x-msvideo';
+            
+            mediaContent = `<video controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" onloadstart="console.log('Video loading started:', this.src)" onloadedmetadata="console.log('Video metadata loaded:', this.duration)" onerror="console.log('Video error:', this.error)">
+                <source src="${article.imageUrl}" type="${videoType}">
+                <source src="${article.imageUrl}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>`;
         } else {
             // Handle image files
             let imageSrc = article.imageUrl;
