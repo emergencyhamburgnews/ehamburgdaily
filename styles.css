@@ -34,7 +34,7 @@ body {
     padding: 8px 12px;
     border: 2px solid #e0e0e0;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 16px;
     width: 200px;
     outline: none;
     transition: all 0.3s ease;
@@ -43,6 +43,20 @@ body {
 .search-input:focus {
     border-color: #ff6b35;
     box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    transform: none;
+}
+
+/* Prevent zoom on mobile when focusing input */
+@media screen and (max-width: 768px) {
+    .search-input {
+        font-size: 16px !important;
+        transform: scale(1);
+    }
+    
+    .search-input:focus {
+        font-size: 16px !important;
+        transform: scale(1);
+    }
 }
 
 .search-results {
@@ -593,7 +607,7 @@ body {
     
     .search-input {
         width: 150px;
-        font-size: 12px;
+        font-size: 16px;
     }
     
     .search-results {

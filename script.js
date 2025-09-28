@@ -62,13 +62,23 @@ function createNewsItem(article) {
         }
     } else if (article.imageUrl) {
         console.log('Article imageUrl:', article.imageUrl);
-        // Handle local image files by adding ./ prefix if not a full URL
-        let imageSrc = article.imageUrl;
-        if (!imageSrc.startsWith('http') && !imageSrc.startsWith('./')) {
-            imageSrc = './' + imageSrc;
+        
+        // Check if imageUrl is actually a video
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+        const isVideoFile = videoExtensions.some(ext => article.imageUrl.toLowerCase().includes(ext));
+        
+        if (isVideoFile) {
+            // Handle video in imageUrl field
+            mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.imageUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+        } else {
+            // Handle image files
+            let imageSrc = article.imageUrl;
+            if (!imageSrc.startsWith('http') && !imageSrc.startsWith('./')) {
+                imageSrc = './' + imageSrc;
+            }
+            console.log('Final image source:', imageSrc);
+            mediaContent = `<img src="${imageSrc}" alt="${article.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<span style=&quot;color:red;&quot;>Image not found: ${imageSrc}</span>';" onload="console.log('Image loaded:', this.src);">`;
         }
-        console.log('Final image source:', imageSrc);
-        mediaContent = `<img src="${imageSrc}" alt="${article.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<span style=&quot;color:red;&quot;>Image not found: ${imageSrc}</span>';" onload="console.log('Image loaded:', this.src);">`;
     } else {
         console.log('No imageUrl for article:', article);
         mediaContent = '<span>Image/Video</span>';
@@ -297,23 +307,37 @@ function updateSocialMetaTags(latestArticle) {
         currentUrl = currentUrl.replace('/about.html', '/about');
     }
     
+    // Get the best image for social media (prefer imageUrl, fallback to videoUrl if it's an image)
+    let socialImage = './news1.jpg'; // Default fallback
+    if (latestArticle.imageUrl) {
+        // Check if imageUrl is actually a video
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+        const isVideoFile = videoExtensions.some(ext => latestArticle.imageUrl.toLowerCase().includes(ext));
+        
+        if (!isVideoFile) {
+            // It's an image, use it
+            socialImage = latestArticle.imageUrl.startsWith('http') ? latestArticle.imageUrl : './' + latestArticle.imageUrl;
+        }
+    }
+    
     // Update Open Graph tags
     document.getElementById('og-title').setAttribute('content', latestArticle.title || 'EHAMBURG DAILY');
     document.getElementById('og-description').setAttribute('content', latestArticle.description || 'Latest news and updates from EHAMBURG DAILY');
-    document.getElementById('og-image').setAttribute('content', latestArticle.imageUrl ? (latestArticle.imageUrl.startsWith('http') ? latestArticle.imageUrl : './' + latestArticle.imageUrl) : './news1.jpg');
-    document.getElementById('og-image-secure').setAttribute('content', latestArticle.imageUrl ? (latestArticle.imageUrl.startsWith('http') ? latestArticle.imageUrl : './' + latestArticle.imageUrl) : './news1.jpg');
+    document.getElementById('og-image').setAttribute('content', socialImage);
+    document.getElementById('og-image-secure').setAttribute('content', socialImage);
     document.getElementById('og-url').setAttribute('content', currentUrl);
     
     // Update Twitter Card tags
     document.getElementById('twitter-title').setAttribute('content', latestArticle.title || 'EHAMBURG DAILY');
     document.getElementById('twitter-description').setAttribute('content', latestArticle.description || 'Latest news and updates from EHAMBURG DAILY');
-    document.getElementById('twitter-image').setAttribute('content', latestArticle.imageUrl ? (latestArticle.imageUrl.startsWith('http') ? latestArticle.imageUrl : './' + latestArticle.imageUrl) : './news1.jpg');
+    document.getElementById('twitter-image').setAttribute('content', socialImage);
     
     // Update general meta tags
     document.getElementById('meta-description').setAttribute('content', latestArticle.description || 'Latest news and updates from EHAMBURG DAILY');
     document.title = latestArticle.title ? `${latestArticle.title} - EHAMBURG DAILY` : 'EHAMBURG DAILY';
     
     console.log('Social meta tags updated with latest article:', latestArticle.title);
+    console.log('Social image for sharing:', socialImage);
     console.log('Clean URL for sharing:', currentUrl);
 }
 
