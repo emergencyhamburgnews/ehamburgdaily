@@ -34,17 +34,31 @@ function createNewsItem(article) {
     
     let mediaContent = '<span>Image/Video</span>';
     if (article.videoUrl) {
-        console.log('Setting video for latest news:', article.videoUrl); // Debug log
+        console.log('Article videoUrl:', article.videoUrl);
+        // Handle YouTube videos
         if (article.videoUrl.includes('youtube.com') || article.videoUrl.includes('youtu.be')) {
             const videoId = article.videoUrl.includes('youtu.be') ? 
                 article.videoUrl.split('youtu.be/')[1] : 
                 article.videoUrl.split('v=')[1]?.split('&')[0];
             mediaContent = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
-        } else if (article.videoUrl.includes('vimeo.com')) {
+        } 
+        // Handle Vimeo videos
+        else if (article.videoUrl.includes('vimeo.com')) {
             const videoId = article.videoUrl.split('vimeo.com/')[1];
             mediaContent = `<iframe src="https://player.vimeo.com/video/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
-        } else {
-            mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.videoUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+        } 
+        // Handle direct video files (MP4, WebM, etc.)
+        else {
+            // Check if it's a direct video file
+            const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+            const isVideoFile = videoExtensions.some(ext => article.videoUrl.toLowerCase().includes(ext));
+            
+            if (isVideoFile) {
+                mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.videoUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            } else {
+                // Try as direct video URL
+                mediaContent = `<video controls style="width: 100%; height: 100%; object-fit: cover;"><source src="${article.videoUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            }
         }
     } else if (article.imageUrl) {
         console.log('Article imageUrl:', article.imageUrl);
@@ -61,10 +75,10 @@ function createNewsItem(article) {
     }
 
     newsItem.innerHTML = `
-        <div class="news-item-image">
+        <div class="news-item-image" onclick="openArticle('${article.id}')">
             ${mediaContent}
         </div>
-        <div class="news-item-info">
+        <div class="news-item-info" onclick="openArticle('${article.id}')">
             <div class="news-item-date">${date.toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
@@ -76,6 +90,19 @@ function createNewsItem(article) {
     `;
     
     return newsItem;
+}
+
+// Function to open article (you can customize this)
+function openArticle(articleId) {
+    console.log('Opening article:', articleId);
+    // For now, just scroll to top and show a message
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // You can customize this to:
+    // 1. Open a modal with full article
+    // 2. Navigate to a separate article page
+    // 3. Show more details
+    // 4. Or just scroll to top (current behavior)
 }
 
 function displayPlaceholderNews() {
@@ -261,8 +288,14 @@ function updateGameUpdateDisplay(data, language) {
 function updateSocialMetaTags(latestArticle) {
     if (!latestArticle) return;
     
-    // Get current URL
-    const currentUrl = window.location.href;
+    // Get clean URL without index.html
+    let currentUrl = window.location.href;
+    if (currentUrl.includes('/index.html')) {
+        currentUrl = currentUrl.replace('/index.html', '/');
+    }
+    if (currentUrl.includes('/about.html')) {
+        currentUrl = currentUrl.replace('/about.html', '/about');
+    }
     
     // Update Open Graph tags
     document.getElementById('og-title').setAttribute('content', latestArticle.title || 'EHAMBURG DAILY');
@@ -281,6 +314,7 @@ function updateSocialMetaTags(latestArticle) {
     document.title = latestArticle.title ? `${latestArticle.title} - EHAMBURG DAILY` : 'EHAMBURG DAILY';
     
     console.log('Social meta tags updated with latest article:', latestArticle.title);
+    console.log('Clean URL for sharing:', currentUrl);
 }
 
 // Language selector functionality
@@ -306,10 +340,146 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Search functionality
+let searchTimeout;
+
+function initializeSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    
+    if (!searchInput || !searchResults) return;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+}
+
+function performSearch(query) {
+    const searchResults = document.getElementById('search-results');
+    const results = [];
+    
+    // Search in news articles
+    const newsItems = document.querySelectorAll('.news-item');
+    newsItems.forEach((item, index) => {
+        const title = item.querySelector('.news-item-title')?.textContent || '';
+        const description = item.querySelector('.news-item-description')?.textContent || '';
+        const date = item.querySelector('.news-item-date')?.textContent || '';
+        
+        if (title.toLowerCase().includes(query.toLowerCase()) || 
+            description.toLowerCase().includes(query.toLowerCase()) ||
+            date.toLowerCase().includes(query.toLowerCase())) {
+            
+            results.push({
+                type: 'news',
+                title: title,
+                description: description,
+                date: date,
+                element: item,
+                index: index
+            });
+        }
+    });
+    
+    // Search in about page content
+    const aboutSections = document.querySelectorAll('h1, h2, h3, p');
+    aboutSections.forEach(section => {
+        const text = section.textContent || '';
+        if (text.toLowerCase().includes(query.toLowerCase()) && text.length > 10) {
+            results.push({
+                type: 'content',
+                title: section.tagName === 'H1' || section.tagName === 'H2' || section.tagName === 'H3' ? text : 'Content',
+                description: text.substring(0, 100) + '...',
+                element: section
+            });
+        }
+    });
+    
+    displaySearchResults(results, query);
+}
+
+function displaySearchResults(results, query) {
+    const searchResults = document.getElementById('search-results');
+    
+    if (results.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+        searchResults.style.display = 'block';
+        return;
+    }
+    
+    const html = results.map(result => {
+        const highlightedTitle = highlightText(result.title, query);
+        const highlightedDescription = highlightText(result.description, query);
+        
+        return `
+            <div class="search-result-item" onclick="selectSearchResult('${result.type}', ${result.index || 0})">
+                <div class="search-result-title">${highlightedTitle}</div>
+                <div class="search-result-preview">${highlightedDescription}</div>
+            </div>
+        `;
+    }).join('');
+    
+    searchResults.innerHTML = html;
+    searchResults.style.display = 'block';
+}
+
+function highlightText(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<span class="search-highlight">$1</span>');
+}
+
+function selectSearchResult(type, index) {
+    const searchResults = document.getElementById('search-results');
+    const searchInput = document.getElementById('search-input');
+    
+    searchResults.style.display = 'none';
+    searchInput.value = '';
+    
+    if (type === 'news') {
+        const newsItems = document.querySelectorAll('.news-item');
+        if (newsItems[index]) {
+            newsItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add yellow highlight
+            newsItems[index].style.backgroundColor = '#ffeb3b';
+            setTimeout(() => {
+                newsItems[index].style.backgroundColor = '';
+            }, 3000);
+        }
+    } else if (type === 'content') {
+        const aboutSections = document.querySelectorAll('h1, h2, h3, p');
+        if (aboutSections[index]) {
+            aboutSections[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add yellow highlight
+            aboutSections[index].style.backgroundColor = '#ffeb3b';
+            setTimeout(() => {
+                aboutSections[index].style.backgroundColor = '';
+            }, 3000);
+        }
+    }
+}
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     loadAllNews();
     loadGameUpdates();
+    initializeSearch();
 });
 
 // Handle window resize for responsive behavior - handled in DOMContentLoaded
