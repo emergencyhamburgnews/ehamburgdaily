@@ -1,0 +1,33 @@
+{
+  "name": "ehamburg-daily",
+  "version": "1.0.0",
+  "description": "A responsive news website with Firebase backend integration",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "dev": "npx live-server --port=3000 --open=/index.html"
+  },
+  "keywords": [
+    "news",
+    "website",
+    "responsive",
+    "firebase",
+    "javascript",
+    "html",
+    "css"
+  ],
+  "author": "EHAMBURG DAILY",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ehamburg-daily.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ehamburg-daily/issues"
+  },
+  "homepage": "https://github.com/your-username/ehamburg-daily#readme"
+}

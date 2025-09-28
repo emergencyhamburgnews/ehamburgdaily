@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHAMBURG DAILY</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="webfavehd.jpg">
+    
+    <!-- Open Graph Meta Tags for Social Media Sharing -->
+    <meta property="og:title" content="EHAMBURG DAILY" id="og-title">
+    <meta property="og:description" content="Latest news and updates from EHAMBURG DAILY" id="og-description">
+    <meta property="og:image" content="./news1.jpg" id="og-image">
+    <meta property="og:image:secure_url" content="./news1.jpg" id="og-image-secure">
+    <meta property="og:image:type" content="image/jpeg" id="og-image-type">
+    <meta property="og:image:width" content="1200" id="og-image-width">
+    <meta property="og:image:height" content="630" id="og-image-height">
+    <meta property="og:image:alt" content="EHAMBURG DAILY News" id="og-image-alt">
+    <meta property="og:url" content="" id="og-url">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="EHAMBURG DAILY">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" id="twitter-card">
+    <meta name="twitter:title" content="EHAMBURG DAILY" id="twitter-title">
+    <meta name="twitter:description" content="Latest news and updates from EHAMBURG DAILY" id="twitter-description">
+    <meta name="twitter:image" content="./news1.jpg" id="twitter-image">
+    <meta name="twitter:image:alt" content="EHAMBURG DAILY News" id="twitter-image-alt">
+    
+    <!-- General Meta Tags -->
+    <meta name="description" content="Latest news and updates from EHAMBURG DAILY" id="meta-description">
+    <meta name="keywords" content="ehamburg, news, daily, updates, hamburg, emergency">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="dark ehd logo.png" alt="EHAMBURG DAILY" class="main-logo">
+            </div>
+            <nav class="nav-desktop">
+                <button class="nav-btn">Home</button>
+                <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
+            </nav>
+            <button class="hamburger-menu" id="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <!-- Mobile Navigation Menu -->
+            <div class="nav-mobile" id="nav-mobile">
+                <button class="nav-btn">Home</button>
+                <button class="nav-btn">About</button>
+            </div>
+        </div>
+        <div class="header-divider"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- News Section -->
+            <section class="news-section">
+            <div class="section-indicator">
+                <div class="blue-line"></div>
+                <span class="section-text">News</span>
+            </div>
+            
+            <div class="news-grid" id="news-grid">
+                <!-- News articles will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Game Update Section -->
+        <section class="game-update-section">
+            <div class="section-indicator">
+                <div class="blue-line"></div>
+                <span class="section-text">Game Updates</span>
+            </div>
+            
+            <div class="game-update-container">
+                <div class="game-update-content">
+                    <h2 class="game-update-title" id="game-update-title">Loading...</h2>
+                    <p class="game-update-info" id="game-update-info">Loading update information...</p>
+                </div>
+                
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="en">English</button>
+                    <button class="lang-btn" data-lang="de">Deutsch</button>
+                </div>
+            </div>
+        </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 EHAMBURG DAILY. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, orderBy, limit, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase configuration - Your actual Firebase project config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7I9K8ds6Px60jMm71Kt7weVAX-vhcM8w",
+            authDomain: "ehamburg-90958.firebaseapp.com",
+            projectId: "ehamburg-90958",
+            storageBucket: "ehamburg-90958.firebasestorage.app",
+            messagingSenderId: "166375320407",
+            appId: "1:166375320407:web:1e3b0b85a410522bf4ec12",
+            measurementId: "G-FLLYGR93PX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.db = db;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.limit = limit;
+    </script>
+    
+    <script src="script.js"></script>
+    <script src="mobile-nav.js"></script>
+</body>
+</html>

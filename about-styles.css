@@ -1,0 +1,407 @@
+/* About Page Styles */
+.about-main {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 60px 0;
+}
+
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Section */
+.about-hero {
+    text-align: center;
+    margin-bottom: 80px;
+    padding: 40px 0;
+}
+
+.about-title {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #ff6b35;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.about-subtitle {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #333;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Mission Section */
+.mission-section {
+    margin-bottom: 80px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b35, #ff8c42);
+    border-radius: 2px;
+}
+
+.mission-text {
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: #555;
+    line-height: 1.8;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Focus Section */
+.focus-section {
+    margin-bottom: 80px;
+}
+
+.focus-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-top: 50px;
+}
+
+.focus-card {
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 1px solid #f0f0f0;
+}
+
+.focus-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border-radius: 0;
+    color: #ff6b35;
+    font-size: 1.5rem;
+    font-weight: bold;
+    position: relative;
+    box-shadow: none;
+}
+
+.focus-icon::before {
+    display: none;
+}
+
+/* Icon Content Styles */
+.icon-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+/* News Icon - Newspaper lines */
+.icon-line {
+    width: 20px;
+    height: 3px;
+    background: #ff6b35;
+    border-radius: 2px;
+}
+
+.icon-line.short {
+    width: 12px;
+}
+
+/* Community Icon - People circles */
+.icon-circle {
+    width: 12px;
+    height: 12px;
+    background: #4CAF50;
+    border-radius: 50%;
+}
+
+.icon-circle.small {
+    width: 8px;
+    height: 8px;
+}
+
+.icon-circle.tiny {
+    width: 4px;
+    height: 4px;
+}
+
+/* Announcement Icon - Megaphone */
+.icon-triangle {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 12px solid #2196F3;
+}
+
+/* Specific Icon Styles */
+.news-icon {
+    background: none;
+}
+
+.community-icon {
+    background: none;
+}
+
+.announcement-icon {
+    background: none;
+}
+
+.focus-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+.focus-description {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Commitment Section */
+.commitment-section {
+    margin-bottom: 80px;
+    text-align: center;
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    padding: 60px 40px;
+    border-radius: 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.commitment-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.commitment-section .section-title {
+    color: white;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.commitment-section .section-title::after {
+    background: white;
+}
+
+.commitment-text {
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Thank You Section */
+.thank-you-section {
+    margin-bottom: 60px;
+}
+
+.thank-you-card {
+    background: #ffffff;
+    padding: 60px 40px;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 2px solid #ff6b35;
+    position: relative;
+}
+
+.thank-you-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff6b35, #ff8c42, #ff6b35);
+    border-radius: 20px;
+    z-index: -1;
+}
+
+.thank-you-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ff6b35;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.thank-you-text {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Footer */
+/* Footer styles removed - using main styles.css footer */
+
+/* Active Navigation */
+.nav-btn.active {
+    background-color: #ff6b35 !important;
+    color: white !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about-main {
+        padding: 40px 0;
+    }
+    
+    .about-container {
+        padding: 0 15px;
+    }
+    
+    .about-hero {
+        margin-bottom: 50px;
+        padding: 20px 0;
+    }
+    
+    .about-title {
+        font-size: 2.5rem;
+    }
+    
+    .about-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .mission-section,
+    .focus-section,
+    .commitment-section {
+        margin-bottom: 50px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .mission-text,
+    .commitment-text {
+        font-size: 1.1rem;
+    }
+    
+    .focus-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .focus-card {
+        padding: 25px 20px;
+    }
+    
+    .focus-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .commitment-section {
+        padding: 30px 20px;
+    }
+    
+    .thank-you-card {
+        padding: 30px 20px;
+    }
+    
+    .thank-you-title {
+        font-size: 2rem;
+    }
+    
+    .thank-you-text {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-main {
+        padding: 40px 0;
+    }
+    
+    .about-container {
+        padding: 0 15px;
+    }
+    
+    .about-title {
+        font-size: 2rem;
+    }
+    
+    .about-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .focus-card {
+        padding: 25px 15px;
+    }
+    
+    .commitment-section {
+        padding: 30px 15px;
+    }
+    
+    .thank-you-card {
+        padding: 30px 15px;
+    }
+}
