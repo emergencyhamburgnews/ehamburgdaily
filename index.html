@@ -43,8 +43,33 @@
                 <img src="dark ehd logo.png" alt="EHAMBURG DAILY" class="main-logo">
             </div>
             <nav class="nav-desktop">
-                <button class="nav-btn">Home</button>
-                <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
+                <div class="nav-section">
+                    <button class="nav-section-title">News</button>
+                    <div class="nav-dropdown">
+                        <a href="#" class="nav-section-item">Game Updates</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <button class="nav-section-title">About Us</button>
+                    <div class="nav-dropdown">
+                        <a href="about.html" class="nav-section-item">Our Mission</a>
+                        <a href="about.html" class="nav-section-item">We Focus on Bringing You</a>
+                        <a href="about.html" class="nav-section-item">Our Commitment</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <button class="nav-section-title">Follow Us</button>
+                    <div class="nav-dropdown">
+                        <div class="social-links">
+                            <a href="https://x.com/ehamburg82588?s=21" target="_blank" class="social-link">
+                                <img src="x logo.png" alt="X (Twitter)">
+                            </a>
+                            <a href="https://www.tiktok.com/@ehamburgdaily" target="_blank" class="social-link">
+                                <img src="tiktok logo.png" alt="TikTok">
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </nav>
             
             <div class="search-container">
@@ -58,12 +83,33 @@
             </button>
             <!-- Mobile Navigation Menu -->
             <div class="nav-mobile" id="nav-mobile">
-                <button class="nav-btn">Home</button>
-                <button class="nav-btn">About</button>
+                <div class="nav-section">
+                    <div class="nav-section-title">News</div>
+                    <a href="#" class="nav-section-item">Game Updates</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">About Us</div>
+                    <a href="about.html" class="nav-section-item">Our Mission</a>
+                    <a href="about.html" class="nav-section-item">We Focus on Bringing You</a>
+                    <a href="about.html" class="nav-section-item">Our Commitment</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Follow Us</div>
+                    <div class="social-links">
+                        <a href="https://x.com/ehamburg82588?s=21" target="_blank" class="social-link">
+                            <img src="x logo.png" alt="X (Twitter)">
+                        </a>
+                        <a href="https://www.tiktok.com/@ehamburgdaily" target="_blank" class="social-link">
+                            <img src="tiktok logo.png" alt="TikTok">
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="header-divider"></div>
     </header>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
 
     <!-- Main Content -->
     <main class="main-content">

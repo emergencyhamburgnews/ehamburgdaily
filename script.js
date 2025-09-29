@@ -37,10 +37,25 @@ function createNewsItem(article) {
         console.log('Article videoUrl:', article.videoUrl);
         // Handle YouTube videos
         if (article.videoUrl.includes('youtube.com') || article.videoUrl.includes('youtu.be')) {
-            const videoId = article.videoUrl.includes('youtu.be') ? 
-                article.videoUrl.split('youtu.be/')[1] : 
-                article.videoUrl.split('v=')[1]?.split('&')[0];
-            mediaContent = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
+            let videoId = '';
+            if (article.videoUrl.includes('youtu.be/')) {
+                videoId = article.videoUrl.split('youtu.be/')[1].split('?')[0];
+            } else if (article.videoUrl.includes('youtube.com/watch?v=')) {
+                videoId = article.videoUrl.split('v=')[1].split('&')[0];
+            } else if (article.videoUrl.includes('youtube.com/embed/')) {
+                videoId = article.videoUrl.split('embed/')[1].split('?')[0];
+            }
+            
+            if (videoId) {
+                mediaContent = `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" frameborder="0" allowfullscreen style="width: 100%; height: 100%;" onerror="console.log('YouTube embed error for video:', '${videoId}')"></iframe>`;
+            } else {
+                mediaContent = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f0f0f0; color: #666;">
+                    <div style="text-align: center;">
+                        <p>Invalid YouTube URL</p>
+                        <a href="${article.videoUrl}" target="_blank" style="color: #ff6b35;">Open in YouTube</a>
+                    </div>
+                </div>`;
+            }
         } 
         // Handle Vimeo videos
         else if (article.videoUrl.includes('vimeo.com')) {
