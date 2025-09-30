@@ -171,10 +171,13 @@ function createNewsItem(article) {
                     month: 'long', 
                     day: 'numeric' 
                 })}</div>
-                <button class="copy-link-btn" onclick="event.stopPropagation(); copyNewsLink('${article.id}', '${article.title || 'Title'}', '${article.description || 'Description'}', '${article.imageUrl || ''}')" title="Copy link to share">
+                <button class="share-btn" onclick="event.stopPropagation(); event.preventDefault(); openShareMenu('${article.id}', '${article.title || 'Title'}', '${article.description || 'Description'}', '${article.imageUrl || ''}'); return false;" title="Share this news">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                     </svg>
                 </button>
             </div>
@@ -199,10 +202,10 @@ function openArticle(articleId) {
     // 4. Or just scroll to top (current behavior)
 }
 
-// Function to copy news link with meta tags
-async function copyNewsLink(articleId, title, description, imageUrl) {
+// Copy news link with meta tags for social media sharing
+async function openShareMenu(articleId, title, description, imageUrl) {
     try {
-        // Get clean URL without index.html
+        // Get clean URL
         let currentUrl = window.location.origin + window.location.pathname;
         if (currentUrl.includes('/index.html')) {
             currentUrl = currentUrl.replace('/index.html', '/');
@@ -211,53 +214,74 @@ async function copyNewsLink(articleId, title, description, imageUrl) {
             currentUrl = currentUrl.slice(0, -1);
         }
         
-        // Create shareable URL with article ID
         const shareableUrl = `${currentUrl}#article-${articleId}`;
-        
-        console.log('Generated URL:', shareableUrl);
-        console.log('Article ID:', articleId);
-        console.log('Title:', title);
         
         // Update meta tags for this specific article
         updateMetaTagsForArticle(title, description, imageUrl, shareableUrl);
         
-        // Try multiple copy methods for better compatibility
-        try {
-            // Modern clipboard API
-            await navigator.clipboard.writeText(shareableUrl);
-            console.log('Copied using clipboard API');
-        } catch (clipboardError) {
-            console.log('Clipboard API failed, trying fallback method');
-            
-            // Fallback method for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = shareableUrl;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                console.log('Copied using execCommand');
-            } catch (execError) {
-                console.error('Both copy methods failed');
-                throw execError;
-            } finally {
-                document.body.removeChild(textArea);
-            }
-        }
+        // Copy the link to clipboard
+        await copyToClipboard(shareableUrl);
         
         // Show success message
         showCopySuccess();
         
-        console.log('Link successfully copied:', shareableUrl);
+        console.log('Link copied for social media sharing:', shareableUrl);
+        console.log('Meta tags updated for:', title);
         
     } catch (error) {
         console.error('Error copying link:', error);
         showCopyError();
+    }
+}
+
+// Close share menu
+function closeShareMenu() {
+    const shareMenu = document.querySelector('.share-menu');
+    if (shareMenu) {
+        shareMenu.remove();
+    }
+}
+
+// Share to Facebook
+function shareToFacebook(url, title) {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank', 'width=600,height=400');
+    closeShareMenu();
+}
+
+// Share to Twitter
+function shareToTwitter(url, title) {
+    const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=400');
+    closeShareMenu();
+}
+
+// Share to WhatsApp
+function shareToWhatsApp(url, title) {
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`;
+    window.open(whatsappUrl, '_blank');
+    closeShareMenu();
+}
+
+// Copy to clipboard
+async function copyToClipboard(url) {
+    try {
+        await navigator.clipboard.writeText(url);
+        showCopySuccess();
+        closeShareMenu();
+    } catch (error) {
+        // Fallback method
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showCopySuccess();
+        closeShareMenu();
     }
 }
 
@@ -299,26 +323,76 @@ function updateMetaTagsForArticle(title, description, imageUrl, url) {
 
 // Show copy success message
 function showCopySuccess() {
+    // Remove any existing messages
+    const existingMsg = document.querySelector('.copy-success-message, .copy-error-message');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
+    
     const successMsg = document.createElement('div');
     successMsg.className = 'copy-success-message';
-    successMsg.textContent = 'Link copied! Share it on social media.';
+    successMsg.innerHTML = `
+        <div class="message-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <span>Link copied successfully! Paste on social media for rich preview.</span>
+        </div>
+    `;
     document.body.appendChild(successMsg);
     
+    // Show message
     setTimeout(() => {
-        successMsg.remove();
-    }, 3000);
+        successMsg.classList.add('show');
+    }, 100);
+    
+    // Remove message after 5 seconds
+    setTimeout(() => {
+        successMsg.classList.remove('show');
+        setTimeout(() => {
+            if (successMsg.parentNode) {
+                successMsg.remove();
+            }
+        }, 300);
+    }, 5000);
 }
 
 // Show copy error message
 function showCopyError() {
+    // Remove any existing messages
+    const existingMsg = document.querySelector('.copy-success-message, .copy-error-message');
+    if (existingMsg) {
+        existingMsg.remove();
+    }
+    
     const errorMsg = document.createElement('div');
     errorMsg.className = 'copy-error-message';
-    errorMsg.textContent = 'Failed to copy link. Please try again.';
+    errorMsg.innerHTML = `
+        <div class="message-content">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span>Failed to copy link. Please try again.</span>
+        </div>
+    `;
     document.body.appendChild(errorMsg);
     
+    // Show message
     setTimeout(() => {
-        errorMsg.remove();
-    }, 3000);
+        errorMsg.classList.add('show');
+    }, 100);
+    
+    // Remove message after 5 seconds
+    setTimeout(() => {
+        errorMsg.classList.remove('show');
+        setTimeout(() => {
+            if (errorMsg.parentNode) {
+                errorMsg.remove();
+            }
+        }, 300);
+    }, 5000);
 }
 
 // Test function to verify copy functionality
@@ -724,49 +798,32 @@ function selectSearchResult(type, index) {
     }
 }
 
-// Load latest TikTok post from TikTok account
+// Load latest TikTok post from Firebase backend
 async function loadLatestTikTok() {
     try {
-        console.log('Loading latest TikTok post from @ehamburgdaily...');
+        console.log('Loading latest TikTok post from Firebase...');
         
-        // TikTok username
-        const tiktokUsername = 'ehamburgdaily';
+        // Get TikTok posts from Firebase
+        const tiktokRef = collection(db, 'tiktokPosts');
+        const tiktokSnapshot = await getDocs(tiktokRef);
         
-        // Display TikTok profile with latest posts
-        displayTikTokProfile(tiktokUsername);
-        
+        if (!tiktokSnapshot.empty) {
+            // Get the most recent post (assuming they're ordered by timestamp)
+            const latestPost = tiktokSnapshot.docs[0].data();
+            console.log('Latest TikTok post:', latestPost);
+            
+            displayTikTokPost(latestPost);
+        } else {
+            console.log('No TikTok posts found');
+            displayTikTokFallback();
+        }
     } catch (error) {
         console.error('Error loading TikTok post:', error);
         displayTikTokFallback();
     }
 }
 
-// Display TikTok profile with latest posts
-function displayTikTokProfile(username) {
-    const tiktokPostElement = document.getElementById('tiktok-post');
-    
-    if (!tiktokPostElement) {
-        console.log('TikTok post element not found');
-        return;
-    }
-    
-    // Create TikTok iframe embed that actually works
-    tiktokPostElement.innerHTML = `
-        <div class="tiktok-video-container">
-            <iframe 
-                src="https://www.tiktok.com/embed/v2/${username}" 
-                class="tiktok-iframe"
-                frameborder="0" 
-                allowfullscreen
-                allow="autoplay; fullscreen"
-                onload="console.log('TikTok iframe loaded')"
-                onerror="console.log('TikTok iframe error'); this.parentElement.innerHTML='<div class=\\"tiktok-fallback\\"><h3>Latest TikTok Content</h3><p>Check out our latest TikTok posts!</p><a href=\\"https://www.tiktok.com/@${username}\\" target=\\"_blank\\">View Latest Posts</a></div>'">
-            </iframe>
-        </div>
-    `;
-}
-
-// Display TikTok post
+// Display TikTok post from Firebase
 function displayTikTokPost(post) {
     const tiktokPostElement = document.getElementById('tiktok-post');
     
@@ -775,20 +832,24 @@ function displayTikTokPost(post) {
         return;
     }
     
-    // Create TikTok embed URL
+    // Create TikTok embed using the video ID from Firebase
     const embedUrl = `https://www.tiktok.com/embed/${post.videoId}`;
     
     tiktokPostElement.innerHTML = `
-        <iframe 
-            class="tiktok-embed" 
-            src="${embedUrl}" 
-            frameborder="0" 
-            allowfullscreen
-            onload="console.log('TikTok embed loaded')"
-            onerror="console.log('TikTok embed error'); this.parentElement.innerHTML='<div class=\\"tiktok-fallback\\"><h3>TikTok Post</h3><p>Unable to load TikTok video</p><a href=\\"${post.url}\\" target=\\"_blank\\">View on TikTok</a></div>'">
-        </iframe>
+        <div class="tiktok-video-container">
+            <iframe 
+                src="${embedUrl}" 
+                class="tiktok-iframe"
+                frameborder="0" 
+                allowfullscreen
+                allow="autoplay; fullscreen"
+                onload="console.log('TikTok embed loaded')"
+                onerror="console.log('TikTok embed error'); this.parentElement.innerHTML='<div class=\\"tiktok-fallback\\"><h3>TikTok Post</h3><p>Unable to load TikTok video</p><a href=\\"${post.url}\\" target=\\"_blank\\">View on TikTok</a></div>'">
+            </iframe>
+        </div>
     `;
 }
+
 
 // Display fallback when no TikTok post is available
 function displayTikTokFallback() {

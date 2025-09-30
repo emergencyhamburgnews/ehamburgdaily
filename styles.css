@@ -783,7 +783,7 @@ body {
     margin-bottom: 8px;
 }
 
-.copy-link-btn {
+.share-btn {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
@@ -796,16 +796,176 @@ body {
     transition: all 0.2s ease;
     color: white;
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
 }
 
-.copy-link-btn:hover {
+.share-btn:hover {
     background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
     transform: scale(1.1);
 }
 
-.copy-link-btn:active {
+.share-btn:active {
     transform: scale(0.95);
+}
+
+.share-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.5);
+}
+
+/* Success and Error Messages */
+.copy-success-message,
+.copy-error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0;
+    max-width: 400px;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.copy-success-message.show,
+.copy-error-message.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.copy-success-message {
+    border-left: 4px solid #10b981;
+}
+
+.copy-error-message {
+    border-left: 4px solid #ef4444;
+}
+
+.message-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+}
+
+.message-content svg {
+    flex-shrink: 0;
+}
+
+.copy-success-message .message-content svg {
+    color: #10b981;
+}
+
+.copy-error-message .message-content svg {
+    color: #ef4444;
+}
+
+.message-content span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    line-height: 1.4;
+}
+
+/* Mobile responsive messages */
+@media (max-width: 768px) {
+    .copy-success-message,
+    .copy-error-message {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .message-content {
+        padding: 14px 16px;
+    }
+    
+    .message-content span {
+        font-size: 13px;
+    }
+}
+
+/* Share Menu */
+.share-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.share-menu-content {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.share-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.share-menu-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.close-share-menu {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.share-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.share-option:hover {
+    background: #f8f9fa;
+    border-color: #ff6b35;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
 }
 
 /* Copy Success/Error Messages */
