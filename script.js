@@ -807,20 +807,59 @@ async function loadLatestTikTok() {
         const tiktokRef = collection(db, 'tiktokPosts');
         const tiktokSnapshot = await getDocs(tiktokRef);
         
+        console.log('TikTok posts found:', tiktokSnapshot.size);
+        
         if (!tiktokSnapshot.empty) {
             // Get the most recent post (assuming they're ordered by timestamp)
             const latestPost = tiktokSnapshot.docs[0].data();
-            console.log('Latest TikTok post:', latestPost);
+            console.log('Latest TikTok post data:', latestPost);
+            
+            // Validate required fields (URL is required, videoId is optional)
+            if (!latestPost.url) {
+                console.error('TikTok post missing URL field:', latestPost);
+                displayTikTokFallback();
+                return;
+            }
             
             displayTikTokPost(latestPost);
         } else {
-            console.log('No TikTok posts found');
+            console.log('No TikTok posts found in Firebase');
             displayTikTokFallback();
         }
     } catch (error) {
         console.error('Error loading TikTok post:', error);
         displayTikTokFallback();
     }
+}
+
+// Extract video ID from TikTok URL
+function extractTikTokVideoId(url) {
+    console.log('Extracting video ID from URL:', url);
+    
+    // Handle different TikTok URL formats
+    if (url.includes('vt.tiktok.com')) {
+        // Short TikTok link - we'll need to follow the redirect
+        console.log('Short TikTok link detected, will use URL directly');
+        return null; // We'll use the URL directly for short links
+    }
+    
+    // Full TikTok URL patterns
+    const patterns = [
+        /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+        /tiktok\.com\/embed\/(\d+)/,
+        /tiktok\.com\/v\/(\d+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            console.log('Video ID extracted:', match[1]);
+            return match[1];
+        }
+    }
+    
+    console.log('Could not extract video ID from URL');
+    return null;
 }
 
 // Display TikTok post from Firebase
@@ -832,22 +871,43 @@ function displayTikTokPost(post) {
         return;
     }
     
-    // Create TikTok embed using the video ID from Firebase
-    const embedUrl = `https://www.tiktok.com/embed/${post.videoId}`;
+    console.log('TikTok post data:', post);
+    console.log('URL:', post.url);
     
-    tiktokPostElement.innerHTML = `
-        <div class="tiktok-video-container">
-            <iframe 
-                src="${embedUrl}" 
-                class="tiktok-iframe"
-                frameborder="0" 
-                allowfullscreen
-                allow="autoplay; fullscreen"
-                onload="console.log('TikTok embed loaded')"
-                onerror="console.log('TikTok embed error'); this.parentElement.innerHTML='<div class=\\"tiktok-fallback\\"><h3>TikTok Post</h3><p>Unable to load TikTok video</p><a href=\\"${post.url}\\" target=\\"_blank\\">View on TikTok</a></div>'">
-            </iframe>
-        </div>
-    `;
+    // Extract video ID from URL if not provided
+    let videoId = post.videoId;
+    if (!videoId && post.url) {
+        videoId = extractTikTokVideoId(post.url);
+    }
+    
+    console.log('Final video ID:', videoId);
+    
+    // Create TikTok embed
+    if (videoId) {
+        // Use video ID for embed
+        tiktokPostElement.innerHTML = `
+            <div class="tiktok-video-container">
+                <blockquote class="tiktok-embed" cite="${post.url}" data-video-id="${videoId}" style="max-width: 605px; min-width: 325px;">
+                    <section>
+                        <a href="${post.url}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
+                    </section>
+                </blockquote>
+                <script async src="https://www.tiktok.com/embed.js"></script>
+            </div>
+        `;
+    } else {
+        // Use URL directly (for short links)
+        tiktokPostElement.innerHTML = `
+            <div class="tiktok-video-container">
+                <blockquote class="tiktok-embed" cite="${post.url}" style="max-width: 605px; min-width: 325px;">
+                    <section>
+                        <a href="${post.url}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
+                    </section>
+                </blockquote>
+                <script async src="https://www.tiktok.com/embed.js"></script>
+            </div>
+        `;
+    }
 }
 
 
