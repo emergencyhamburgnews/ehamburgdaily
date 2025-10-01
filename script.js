@@ -720,7 +720,15 @@ function displayPosts(posts) {
         const script = document.createElement('script');
         script.src = 'https://www.tiktok.com/embed.js';
         script.async = true;
+        script.onload = function() {
+            console.log('TikTok embed script loaded');
+        };
+        script.onerror = function() {
+            console.error('Failed to load TikTok embed script');
+        };
         document.head.appendChild(script);
+    } else {
+        console.log('TikTok embed script already loaded');
     }
 }
 
@@ -745,6 +753,29 @@ function isYouTubeUrl(url) {
     return url.includes('youtube.com') || url.includes('youtu.be');
 }
 
+// Extract TikTok video ID from URL
+function extractTikTokVideoId(url) {
+    console.log('Extracting TikTok video ID from:', url);
+    
+    // Handle different TikTok URL formats
+    const patterns = [
+        /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+        /tiktok\.com\/v\/(\d+)/,
+        /tiktok\.com\/embed\/(\d+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            console.log('TikTok video ID extracted:', match[1]);
+            return match[1];
+        }
+    }
+    
+    console.log('Could not extract TikTok video ID');
+    return null;
+}
+
 // Check if URL is TikTok
 function isTikTokUrl(url) {
     return url.includes('tiktok.com');
@@ -754,6 +785,10 @@ function isTikTokUrl(url) {
 function createPostItem(post) {
     const date = post.timestamp ? new Date(post.timestamp.seconds * 1000) : new Date();
     const videoUrl = post.tiktokUrl || post.youtubeUrl || post.videoUrl;
+    
+    console.log('Creating post item for:', post.title);
+    console.log('Video URL:', videoUrl);
+    console.log('Is TikTok URL:', isTikTokUrl(videoUrl));
     
     let videoEmbed = '';
     
@@ -774,13 +809,26 @@ function createPostItem(post) {
             videoEmbed = `<p>Invalid YouTube URL</p>`;
         }
     } else if (isTikTokUrl(videoUrl)) {
-        videoEmbed = `
-            <blockquote class="tiktok-embed" cite="${videoUrl}" style="max-width: 605px; min-width: 325px; border-radius: 0;">
-                <section>
-                    <a href="${videoUrl}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
-                </section>
-            </blockquote>
-        `;
+        // Extract video ID from TikTok URL
+        const videoId = extractTikTokVideoId(videoUrl);
+        if (videoId) {
+            videoEmbed = `
+                <blockquote class="tiktok-embed" cite="${videoUrl}" data-video-id="${videoId}" style="max-width: 605px; min-width: 325px; border-radius: 0;">
+                    <section>
+                        <a href="${videoUrl}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
+                    </section>
+                </blockquote>
+            `;
+        } else {
+            // Fallback for URLs without clear video ID
+            videoEmbed = `
+                <blockquote class="tiktok-embed" cite="${videoUrl}" style="max-width: 605px; min-width: 325px; border-radius: 0;">
+                    <section>
+                        <a href="${videoUrl}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
+                    </section>
+                </blockquote>
+            `;
+        }
     } else {
         videoEmbed = `<p>Unsupported video URL</p>`;
     }
