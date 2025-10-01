@@ -171,15 +171,6 @@ function createNewsItem(article) {
                     month: 'long', 
                     day: 'numeric' 
                 })}</div>
-                <button class="share-btn" onclick="event.stopPropagation(); event.preventDefault(); openShareMenu('${article.id}', '${article.title || 'Title'}', '${article.description || 'Description'}', '${article.imageUrl || ''}'); return false;" title="Share this news">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
-                </button>
             </div>
             <div class="news-item-title">${article.title || 'Title'}</div>
             <div class="news-item-description">${article.description || 'Description'}</div>
@@ -202,217 +193,83 @@ function openArticle(articleId) {
     // 4. Or just scroll to top (current behavior)
 }
 
-// Copy news link with meta tags for social media sharing
-async function openShareMenu(articleId, title, description, imageUrl) {
+// Load social media settings from Firebase
+async function loadSocialMediaSettings() {
     try {
-        // Get clean URL
-        let currentUrl = window.location.origin + window.location.pathname;
-        if (currentUrl.includes('/index.html')) {
-            currentUrl = currentUrl.replace('/index.html', '/');
+        console.log('Loading social media settings from Firebase...');
+        
+        // Check if Firebase is available
+        if (typeof db === 'undefined') {
+            console.log('Firebase not available, using default settings');
+            return;
         }
-        if (currentUrl.endsWith('/')) {
-            currentUrl = currentUrl.slice(0, -1);
+        
+        // Get social media settings from Firebase
+        const socialRef = collection(db, 'socialSettings');
+        const socialSnapshot = await getDocs(socialRef);
+        
+        if (!socialSnapshot.empty) {
+            const settings = socialSnapshot.docs[0].data();
+            console.log('Social media settings:', settings);
+            
+            // Update meta tags with Firebase settings
+            updateSocialMetaTags(settings);
+        } else {
+            console.log('No social media settings found in Firebase');
         }
-        
-        const shareableUrl = `${currentUrl}#article-${articleId}`;
-        
-        // Update meta tags for this specific article
-        updateMetaTagsForArticle(title, description, imageUrl, shareableUrl);
-        
-        // Copy the link to clipboard
-        await copyToClipboard(shareableUrl);
-        
-        // Show success message
-        showCopySuccess();
-        
-        console.log('Link copied for social media sharing:', shareableUrl);
-        console.log('Meta tags updated for:', title);
-        
     } catch (error) {
-        console.error('Error copying link:', error);
-        showCopyError();
+        console.error('Error loading social media settings:', error);
     }
 }
 
-// Close share menu
-function closeShareMenu() {
-    const shareMenu = document.querySelector('.share-menu');
-    if (shareMenu) {
-        shareMenu.remove();
-    }
-}
-
-// Share to Facebook
-function shareToFacebook(url, title) {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    window.open(facebookUrl, '_blank', 'width=600,height=400');
-    closeShareMenu();
-}
-
-// Share to Twitter
-function shareToTwitter(url, title) {
-    const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
-    window.open(twitterUrl, '_blank', 'width=600,height=400');
-    closeShareMenu();
-}
-
-// Share to WhatsApp
-function shareToWhatsApp(url, title) {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`;
-    window.open(whatsappUrl, '_blank');
-    closeShareMenu();
-}
-
-// Copy to clipboard
-async function copyToClipboard(url) {
-    try {
-        await navigator.clipboard.writeText(url);
-        showCopySuccess();
-        closeShareMenu();
-    } catch (error) {
-        // Fallback method
-        const textArea = document.createElement('textarea');
-        textArea.value = url;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showCopySuccess();
-        closeShareMenu();
-    }
-}
-
-// Update meta tags for specific article
-function updateMetaTagsForArticle(title, description, imageUrl, url) {
-    // Get the best image for social media
-    let socialImage = './news1.jpg'; // Default fallback
-    if (imageUrl) {
-        // Check if imageUrl is actually a video
-        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
-        const isVideoFile = videoExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
-        
-        if (!isVideoFile) {
-            // It's an image, use it
-            socialImage = imageUrl.startsWith('http') ? imageUrl : './' + imageUrl;
-        }
-    }
-    
+// Update social media meta tags from Firebase
+function updateSocialMetaTags(settings) {
     // Update Open Graph tags
-    document.getElementById('og-title').setAttribute('content', title);
-    document.getElementById('og-description').setAttribute('content', description);
-    document.getElementById('og-image').setAttribute('content', socialImage);
-    document.getElementById('og-image-secure').setAttribute('content', socialImage);
-    document.getElementById('og-url').setAttribute('content', url);
-    
-    // Update Twitter Card tags
-    document.getElementById('twitter-title').setAttribute('content', title);
-    document.getElementById('twitter-description').setAttribute('content', description);
-    document.getElementById('twitter-image').setAttribute('content', socialImage);
-    
-    // Update general meta tags
-    document.getElementById('meta-description').setAttribute('content', description);
-    document.title = `${title} - EHAMBURG DAILY`;
-    
-    console.log('Meta tags updated for article:', title);
-    console.log('Social image:', socialImage);
-    console.log('Shareable URL:', url);
-}
-
-// Show copy success message
-function showCopySuccess() {
-    // Remove any existing messages
-    const existingMsg = document.querySelector('.copy-success-message, .copy-error-message');
-    if (existingMsg) {
-        existingMsg.remove();
+    if (settings.title) {
+        document.getElementById('og-title').setAttribute('content', settings.title);
+        document.getElementById('twitter-title').setAttribute('content', settings.title);
     }
     
-    const successMsg = document.createElement('div');
-    successMsg.className = 'copy-success-message';
-    successMsg.innerHTML = `
-        <div class="message-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 6L9 17l-5-5"/>
-            </svg>
-            <span>Link copied successfully! Paste on social media for rich preview.</span>
-        </div>
-    `;
-    document.body.appendChild(successMsg);
-    
-    // Show message
-    setTimeout(() => {
-        successMsg.classList.add('show');
-    }, 100);
-    
-    // Remove message after 5 seconds
-    setTimeout(() => {
-        successMsg.classList.remove('show');
-        setTimeout(() => {
-            if (successMsg.parentNode) {
-                successMsg.remove();
-            }
-        }, 300);
-    }, 5000);
-}
-
-// Show copy error message
-function showCopyError() {
-    // Remove any existing messages
-    const existingMsg = document.querySelector('.copy-success-message, .copy-error-message');
-    if (existingMsg) {
-        existingMsg.remove();
+    if (settings.description) {
+        document.getElementById('og-description').setAttribute('content', settings.description);
+        document.getElementById('twitter-description').setAttribute('content', settings.description);
+        document.getElementById('meta-description').setAttribute('content', settings.description);
     }
     
-    const errorMsg = document.createElement('div');
-    errorMsg.className = 'copy-error-message';
-    errorMsg.innerHTML = `
-        <div class="message-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>
-            <span>Failed to copy link. Please try again.</span>
-        </div>
-    `;
-    document.body.appendChild(errorMsg);
-    
-    // Show message
-    setTimeout(() => {
-        errorMsg.classList.add('show');
-    }, 100);
-    
-    // Remove message after 5 seconds
-    setTimeout(() => {
-        errorMsg.classList.remove('show');
-        setTimeout(() => {
-            if (errorMsg.parentNode) {
-                errorMsg.remove();
-            }
-        }, 300);
-    }, 5000);
-}
-
-// Test function to verify copy functionality
-function testCopyFunction() {
-    const testUrl = 'https://example.com/test-link';
-    console.log('Testing copy functionality...');
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(testUrl).then(() => {
-            console.log('Clipboard API works!');
-        }).catch(err => {
-            console.log('Clipboard API failed:', err);
-        });
-    } else {
-        console.log('Clipboard API not supported, using fallback');
+    if (settings.image) {
+        // Handle image URL
+        let socialImage = settings.image;
+        if (socialImage && !socialImage.startsWith('http')) {
+            // If it's a local image, make it a full URL
+            socialImage = window.location.origin + (socialImage.startsWith('/') ? socialImage : '/' + socialImage);
+        }
+        
+        // Check if image is actually a video (don't use video for social sharing)
+        if (socialImage && (socialImage.includes('.mp4') || socialImage.includes('.webm') || socialImage.includes('.mov'))) {
+            console.log('Image URL appears to be a video, using fallback image');
+            socialImage = './news1.jpg'; // Use fallback image for videos
+        }
+        
+        if (socialImage) {
+            document.getElementById('og-image').setAttribute('content', socialImage);
+            document.getElementById('og-image-secure').setAttribute('content', socialImage);
+            document.getElementById('twitter-image').setAttribute('content', socialImage);
+        }
     }
+    
+    // Update URL
+    let currentUrl = window.location.origin + window.location.pathname;
+    if (currentUrl.includes('/index.html')) {
+        currentUrl = currentUrl.replace('/index.html', '/');
+    }
+    if (currentUrl.endsWith('/')) {
+        currentUrl = currentUrl.slice(0, -1);
+    }
+    document.getElementById('og-url').setAttribute('content', currentUrl);
+    
+    console.log('Social media meta tags updated from Firebase');
 }
 
-// Make test function available globally for debugging
-window.testCopyFunction = testCopyFunction;
 
 function displayPlaceholderNews() {
     const placeholderNews = [
@@ -798,132 +655,164 @@ function selectSearchResult(type, index) {
     }
 }
 
-// Load latest TikTok post from Firebase backend
-async function loadLatestTikTok() {
+
+// Load posts from Firebase
+async function loadPosts() {
     try {
-        console.log('Loading latest TikTok post from Firebase...');
+        console.log('Loading posts from Firebase...');
         
-        // Get TikTok posts from Firebase
-        const tiktokRef = collection(db, 'tiktokPosts');
-        const tiktokSnapshot = await getDocs(tiktokRef);
+        // Check if Firebase is available
+        if (typeof db === 'undefined') {
+            console.log('Firebase not available, showing fallback');
+            displayPostsFallback();
+            return;
+        }
         
-        console.log('TikTok posts found:', tiktokSnapshot.size);
+        // Get posts from Firebase
+        const postsRef = collection(db, 'posts');
+        const postsSnapshot = await getDocs(postsRef);
         
-        if (!tiktokSnapshot.empty) {
-            // Get the most recent post (assuming they're ordered by timestamp)
-            const latestPost = tiktokSnapshot.docs[0].data();
-            console.log('Latest TikTok post data:', latestPost);
+        console.log('Posts found:', postsSnapshot.size);
+        
+        if (!postsSnapshot.empty) {
+            // Sort posts by timestamp (newest first)
+            const posts = postsSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .sort((a, b) => {
+                    const dateA = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date(0);
+                    const dateB = b.timestamp ? new Date(b.timestamp.seconds * 1000) : new Date(0);
+                    return dateB - dateA;
+                });
             
-            // Validate required fields (URL is required, videoId is optional)
-            if (!latestPost.url) {
-                console.error('TikTok post missing URL field:', latestPost);
-                displayTikTokFallback();
-                return;
-            }
-            
-            displayTikTokPost(latestPost);
+            console.log('Posts data:', posts);
+            displayPosts(posts);
         } else {
-            console.log('No TikTok posts found in Firebase');
-            displayTikTokFallback();
+            console.log('No posts found in Firebase');
+            displayPostsFallback();
         }
     } catch (error) {
-        console.error('Error loading TikTok post:', error);
-        displayTikTokFallback();
+        console.error('Error loading posts:', error);
+        displayPostsFallback();
     }
 }
 
-// Extract video ID from TikTok URL
-function extractTikTokVideoId(url) {
-    console.log('Extracting video ID from URL:', url);
+// Display posts from Firebase
+function displayPosts(posts) {
+    const postsGrid = document.getElementById('posts-grid');
     
-    // Handle different TikTok URL formats
-    if (url.includes('vt.tiktok.com')) {
-        // Short TikTok link - we'll need to follow the redirect
-        console.log('Short TikTok link detected, will use URL directly');
-        return null; // We'll use the URL directly for short links
+    if (!postsGrid) {
+        console.log('Posts grid element not found');
+        return;
     }
     
-    // Full TikTok URL patterns
+    console.log('Displaying posts:', posts);
+    
+    if (posts.length === 0) {
+        displayPostsFallback();
+        return;
+    }
+    
+    postsGrid.innerHTML = posts.map(post => createPostItem(post)).join('');
+    console.log('Posts HTML created, post items:', document.querySelectorAll('.post-item').length);
+    
+    // Load TikTok embed script if not already loaded
+    if (!document.querySelector('script[src="https://www.tiktok.com/embed.js"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://www.tiktok.com/embed.js';
+        script.async = true;
+        document.head.appendChild(script);
+    }
+}
+
+// Extract video ID from YouTube URL
+function extractYouTubeVideoId(url) {
     const patterns = [
-        /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
-        /tiktok\.com\/embed\/(\d+)/,
-        /tiktok\.com\/v\/(\d+)/
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /youtube\.com\/v\/([^&\n?#]+)/
     ];
     
     for (const pattern of patterns) {
         const match = url.match(pattern);
         if (match) {
-            console.log('Video ID extracted:', match[1]);
             return match[1];
         }
     }
-    
-    console.log('Could not extract video ID from URL');
     return null;
 }
 
-// Display TikTok post from Firebase
-function displayTikTokPost(post) {
-    const tiktokPostElement = document.getElementById('tiktok-post');
-    
-    if (!tiktokPostElement) {
-        console.log('TikTok post element not found');
-        return;
-    }
-    
-    console.log('TikTok post data:', post);
-    console.log('URL:', post.url);
-    
-    // Extract video ID from URL if not provided
-    let videoId = post.videoId;
-    if (!videoId && post.url) {
-        videoId = extractTikTokVideoId(post.url);
-    }
-    
-    console.log('Final video ID:', videoId);
-    
-    // Create TikTok embed
-    if (videoId) {
-        // Use video ID for embed
-        tiktokPostElement.innerHTML = `
-            <div class="tiktok-video-container">
-                <blockquote class="tiktok-embed" cite="${post.url}" data-video-id="${videoId}" style="max-width: 605px; min-width: 325px;">
-                    <section>
-                        <a href="${post.url}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
-                    </section>
-                </blockquote>
-                <script async src="https://www.tiktok.com/embed.js"></script>
-            </div>
-        `;
-    } else {
-        // Use URL directly (for short links)
-        tiktokPostElement.innerHTML = `
-            <div class="tiktok-video-container">
-                <blockquote class="tiktok-embed" cite="${post.url}" style="max-width: 605px; min-width: 325px;">
-                    <section>
-                        <a href="${post.url}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
-                    </section>
-                </blockquote>
-                <script async src="https://www.tiktok.com/embed.js"></script>
-            </div>
-        `;
-    }
+// Check if URL is YouTube
+function isYouTubeUrl(url) {
+    return url.includes('youtube.com') || url.includes('youtu.be');
 }
 
+// Check if URL is TikTok
+function isTikTokUrl(url) {
+    return url.includes('tiktok.com');
+}
 
-// Display fallback when no TikTok post is available
-function displayTikTokFallback() {
-    const tiktokPostElement = document.getElementById('tiktok-post');
+// Create post item HTML
+function createPostItem(post) {
+    const date = post.timestamp ? new Date(post.timestamp.seconds * 1000) : new Date();
+    const videoUrl = post.tiktokUrl || post.youtubeUrl || post.videoUrl;
     
-    if (!tiktokPostElement) {
-        console.log('TikTok post element not found');
+    let videoEmbed = '';
+    
+    if (isYouTubeUrl(videoUrl)) {
+        const videoId = extractYouTubeVideoId(videoUrl);
+        if (videoId) {
+            videoEmbed = `
+                <iframe 
+                    width="100%" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
+                    frameborder="0" 
+                    allowfullscreen
+                    style="border-radius: 0;">
+                </iframe>
+            `;
+        } else {
+            videoEmbed = `<p>Invalid YouTube URL</p>`;
+        }
+    } else if (isTikTokUrl(videoUrl)) {
+        videoEmbed = `
+            <blockquote class="tiktok-embed" cite="${videoUrl}" style="max-width: 605px; min-width: 325px; border-radius: 0;">
+                <section>
+                    <a href="${videoUrl}" target="_blank" title="@ehamburgdaily">@ehamburgdaily</a>
+                </section>
+            </blockquote>
+        `;
+    } else {
+        videoEmbed = `<p>Unsupported video URL</p>`;
+    }
+    
+    return `
+        <div class="post-item">
+            <div class="post-title">${post.title || 'Untitled Post'}</div>
+            <div class="post-date">${date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })}</div>
+            <div class="post-video-container">
+                ${videoEmbed}
+            </div>
+        </div>
+    `;
+}
+
+// Display fallback when no posts are available
+function displayPostsFallback() {
+    const postsGrid = document.getElementById('posts-grid');
+    
+    if (!postsGrid) {
+        console.log('Posts grid element not found');
         return;
     }
     
-    tiktokPostElement.innerHTML = `
-        <div class="tiktok-fallback">
-            <h3>No TikTok Posts Yet</h3>
-            <p>Check back later for our latest TikTok content!</p>
+    postsGrid.innerHTML = `
+        <div class="posts-fallback">
+            <h3>No Posts Yet</h3>
+            <p>Check back later for our latest TikTok posts!</p>
             <a href="https://www.tiktok.com/@ehamburgdaily" target="_blank">Follow us on TikTok</a>
         </div>
     `;
@@ -933,7 +822,8 @@ function displayTikTokFallback() {
 document.addEventListener('DOMContentLoaded', function() {
     loadAllNews();
     loadGameUpdates();
-    loadLatestTikTok();
+    loadSocialMediaSettings();
+    loadPosts();
     initializeSearch();
 });
 
