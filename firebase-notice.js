@@ -40,10 +40,16 @@ async function loadNoticeBanner() {
             
             if (noticeBanner && noticeData.enabled) {
                 noticeBanner.style.display = 'block';
+                // Force visibility on mobile
+                noticeBanner.style.visibility = 'visible';
+                noticeBanner.style.opacity = '1';
                 if (noticeText) {
                     // Use innerHTML to support HTML links
                     noticeText.innerHTML = noticeData.text || 'Notice';
                     console.log('Notice text set to:', noticeData.text);
+                    
+                    // Auto-adjust banner size based on text length
+                    adjustBannerSize(noticeBanner, noticeData.text);
                 }
                 if (noticeIcon) {
                     // Keep the default "!" icon, don't change it from Firebase
@@ -51,8 +57,10 @@ async function loadNoticeBanner() {
                 }
                 
                 // Add class to header and main content to adjust positioning
-                document.querySelector('.header').classList.add('with-notice');
-                document.querySelector('.main-content').classList.add('with-notice');
+                const header = document.querySelector('.header');
+                const mainContent = document.querySelector('.main-content');
+                header.classList.add('with-notice');
+                mainContent.classList.add('with-notice');
                 
                 console.log('Notice banner displayed successfully');
             }
@@ -122,7 +130,7 @@ function forceShowNoticeBanner(text = 'Test notice from console', icon = '⚠️
 // Initialize notice banner when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing notice banner...');
-    
+
     // Show loading banner immediately
     console.log('Showing loading banner...');
     const banner = document.getElementById('website-notice');
@@ -138,10 +146,10 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Loading banner displayed');
         }
     }
-    
+
     // Then load from Firebase
     loadNoticeBanner();
-    
+
     // Hide banner if Firebase fails to load within 5 seconds
     setTimeout(() => {
         const banner = document.getElementById('website-notice');
@@ -151,6 +159,12 @@ document.addEventListener('DOMContentLoaded', function() {
             banner.style.display = 'none';
         }
     }, 5000);
+    
+    // Fix mobile browser jumping
+    fixMobileScrollJumping();
+    
+    // Ensure banner is visible on mobile
+    ensureMobileBannerVisibility();
 });
 
 // Listen for real-time updates
@@ -205,5 +219,87 @@ function updateNoticeBannerFromSettings(enabled) {
         }
     } else {
         console.error('Notice banner element not found for settings update');
+    }
+}
+
+// Function to automatically adjust banner size based on text length
+function adjustBannerSize(banner, text) {
+    if (!banner || !text) return;
+    
+    // Remove existing size classes from banner and header
+    banner.classList.remove('long-text', 'very-long-text');
+    const header = document.querySelector('.header');
+    if (header) {
+        header.classList.remove('long-text', 'very-long-text');
+    }
+    
+    // Calculate text length (remove HTML tags for accurate count)
+    const textLength = text.replace(/<[^>]*>/g, '').length;
+    
+    console.log('Text length:', textLength, 'characters');
+    
+    // Apply appropriate size class based on text length
+    if (textLength > 200) {
+        // Very long text - smaller font, more padding
+        banner.classList.add('very-long-text');
+        if (header) header.classList.add('very-long-text');
+        console.log('Applied very-long-text class for', textLength, 'characters');
+    } else if (textLength > 100) {
+        // Long text - medium font, more padding
+        banner.classList.add('long-text');
+        if (header) header.classList.add('long-text');
+        console.log('Applied long-text class for', textLength, 'characters');
+    } else {
+        // Short text - default styling
+        console.log('Using default styling for', textLength, 'characters');
+    }
+    
+    // Force a reflow to ensure styles are applied
+    banner.offsetHeight;
+}
+
+// Fix mobile browser scroll jumping
+function fixMobileScrollJumping() {
+    console.log('Applying mobile scroll jumping fixes...');
+    
+    // Fix viewport height issues on mobile
+    function setViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    // Set initial viewport height
+    setViewportHeight();
+    
+    // Update on resize
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', setViewportHeight);
+    
+    console.log('Mobile scroll jumping fixes applied');
+}
+
+// Ensure notice banner is visible on mobile devices
+function ensureMobileBannerVisibility() {
+    console.log('Ensuring mobile banner visibility...');
+    
+    // Check if we're on mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    if (isMobile) {
+        console.log('Mobile device detected, ensuring banner visibility...');
+        
+        // Only apply mobile fixes, don't force display
+        const banner = document.getElementById('website-notice');
+        if (banner) {
+            // Only apply positioning fixes, don't override display
+            banner.style.position = 'fixed';
+            banner.style.top = '0';
+            banner.style.left = '0';
+            banner.style.right = '0';
+            banner.style.width = '100%';
+            banner.style.zIndex = '1002';
+            
+            console.log('Mobile banner positioning applied');
+        }
     }
 }
