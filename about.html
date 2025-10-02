@@ -10,6 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Website Notice Banner -->
+    <div class="notice-banner" id="website-notice" style="display: none;">
+        <div class="notice-content">
+            <div class="notice-icon">
+                <i>!</i>
+            </div>
+            <span class="notice-text">Loading...</span>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -20,15 +30,15 @@
                 <div class="nav-section">
                     <button class="nav-section-title">News</button>
                     <div class="nav-dropdown">
-                        <a href="index.html" class="nav-section-item">Game Updates</a>
+                        <a href="index.html" class="nav-section-item">Home</a>
+                        <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                     </div>
                 </div>
                 <div class="nav-section">
                     <button class="nav-section-title">About Us</button>
                     <div class="nav-dropdown">
-                        <a href="#mission" class="nav-section-item">Our Mission</a>
-                        <a href="#focus" class="nav-section-item">We Focus on Bringing You</a>
-                        <a href="#commitment" class="nav-section-item">Our Commitment</a>
+                        <a href="about.html" class="nav-section-item">About</a>
+                        <a href="settings.html" class="nav-section-item">Settings</a>
                     </div>
                 </div>
                 <div class="nav-section">
@@ -50,6 +60,7 @@
                 <input type="text" id="search-input" placeholder="Search..." class="search-input">
                 <div id="search-results" class="search-results"></div>
             </div>
+            
             <button class="hamburger-menu" id="hamburger-menu">
                 <span></span>
                 <span></span>
@@ -59,13 +70,13 @@
             <div class="nav-mobile" id="nav-mobile">
                 <div class="nav-section">
                     <div class="nav-section-title">News</div>
-                    <a href="index.html" class="nav-section-item">Game Updates</a>
+                    <a href="index.html" class="nav-section-item">Home</a>
+                    <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">About Us</div>
-                    <a href="#mission" class="nav-section-item">Our Mission</a>
-                    <a href="#focus" class="nav-section-item">We Focus on Bringing You</a>
-                    <a href="#commitment" class="nav-section-item">Our Commitment</a>
+                    <a href="about.html" class="nav-section-item">About</a>
+                    <a href="settings.html" class="nav-section-item">Settings</a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Follow Us</div>
@@ -85,73 +96,51 @@
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
-    <!-- About Content -->
-    <main class="about-main">
-        <div class="about-container">
-            <!-- Hero Section -->
-            <section class="about-hero">
-                <h1 class="about-title">About Us</h1>
-                <p class="about-subtitle">Welcome to EHamburg Daily, your trusted source for the latest updates, news, and community announcements.</p>
-            </section>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="about-main">
+            <div class="about-container">
+                <div class="about-hero">
+                    <h1 class="about-title">About Us</h1>
+                    <p class="about-subtitle">Welcome to EHamburg Daily, your trusted source for the latest updates, news, and community announcements.</p>
+                </div>
 
-            <!-- Mission Section -->
-            <section class="mission-section" id="mission">
-                <h2 class="section-title">Our Mission</h2>
-                <p class="mission-text">Our mission is to deliver reliable, clear, and up-to-date information that keeps you informed and connected.</p>
-            </section>
+                <div class="mission-section">
+                    <h2 class="section-title">Our Mission</h2>
+                    <p class="mission-text">Our mission is to deliver reliable, clear, and up-to-date information that keeps you informed and connected.</p>
+                </div>
 
-            <!-- Focus Areas -->
-            <section class="focus-section" id="focus">
-                <h2 class="section-title">We Focus on Bringing You</h2>
-                <div class="focus-grid">
-                    <div class="focus-card">
-                        <div class="focus-icon news-icon">
-                            <div class="icon-content">
-                                <div class="icon-line"></div>
-                                <div class="icon-line short"></div>
-                                <div class="icon-line"></div>
-                            </div>
+                <div class="focus-section">
+                    <h2 class="section-title">What We Focus On</h2>
+                    <div class="focus-grid">
+                        <div class="focus-card">
+                            <div class="focus-icon">📰</div>
+                            <h3 class="focus-title">Latest News</h3>
+                            <p class="focus-text">Stay updated with the most recent developments and announcements.</p>
                         </div>
-                        <h3 class="focus-title">Breaking News & Updates</h3>
-                        <p class="focus-description">Covering what's happening right now</p>
-                    </div>
-                    <div class="focus-card">
-                        <div class="focus-icon community-icon">
-                            <div class="icon-content">
-                                <div class="icon-circle"></div>
-                                <div class="icon-circle small"></div>
-                                <div class="icon-circle small"></div>
-                            </div>
+                        <div class="focus-card">
+                            <div class="focus-icon">🎮</div>
+                            <h3 class="focus-title">Game Updates</h3>
+                            <p class="focus-text">Get the latest information about game features, updates, and improvements.</p>
                         </div>
-                        <h3 class="focus-title">Community Stories</h3>
-                        <p class="focus-description">Highlighting events and people that matter</p>
-                    </div>
-                    <div class="focus-card">
-                        <div class="focus-icon announcement-icon">
-                            <div class="icon-content">
-                                <div class="icon-triangle"></div>
-                                <div class="icon-circle tiny"></div>
-                            </div>
+                        <div class="focus-card">
+                            <div class="focus-icon">👥</div>
+                            <h3 class="focus-title">Community</h3>
+                            <p class="focus-text">Connect with other players and stay engaged with the community.</p>
                         </div>
-                        <h3 class="focus-title">Announcements</h3>
-                        <p class="focus-description">Important information you shouldn't miss</p>
                     </div>
                 </div>
-            </section>
 
-            <!-- Commitment Section -->
-            <section class="commitment-section" id="commitment">
-                <h2 class="section-title">Our Commitment</h2>
-                <p class="commitment-text">We are dedicated to keeping our readers engaged with accurate information, quick updates, and easy-to-read stories.</p>
-            </section>
+                <div class="commitment-section">
+                    <h2 class="section-title">Our Commitment</h2>
+                    <p class="commitment-text">We are committed to providing accurate, timely, and valuable information that helps you stay informed and make the most of your experience.</p>
+                </div>
 
-            <!-- Thank You Section -->
-            <section class="thank-you-section">
                 <div class="thank-you-card">
                     <h2 class="thank-you-title">Thank You</h2>
-                    <p class="thank-you-text">Thank you for choosing EHamburg - where news meets the community.</p>
+                    <p class="thank-you-text">Thank you for being part of our community. We appreciate your support and look forward to continuing to serve you with the best information and updates.</p>
                 </div>
-            </section>
+            </div>
         </div>
     </main>
 
@@ -162,7 +151,40 @@
         </div>
     </footer>
 
-    <!-- JavaScript -->
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase configuration - Your actual Firebase project config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7I9K8ds6Px60jMm71Kt7weVAX-vhcM8w",
+            authDomain: "ehamburg-90958.firebaseapp.com",
+            projectId: "ehamburg-90958",
+            storageBucket: "ehamburg-90958.firebasestorage.app",
+            messagingSenderId: "166375320407",
+            appId: "1:166375320407:web:1e3b0b85a410522bf4ec12",
+            measurementId: "G-FLLYGR93PX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.db = db;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.limit = limit;
+    </script>
+    
+    <script src="script.js"></script>
+    <script src="firebase-notice.js"></script>
     <script src="mobile-nav.js"></script>
     <script src="search.js"></script>
 </body>

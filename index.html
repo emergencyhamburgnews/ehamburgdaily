@@ -36,6 +36,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Website Notice Banner -->
+    <div class="notice-banner" id="website-notice" style="display: none;">
+        <div class="notice-content">
+            <div class="notice-icon">
+                <i>!</i>
+            </div>
+            <span class="notice-text">Loading...</span>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -46,15 +56,15 @@
                 <div class="nav-section">
                     <button class="nav-section-title">News</button>
                     <div class="nav-dropdown">
-                        <a href="#" class="nav-section-item">Game Updates</a>
+                        <a href="index.html" class="nav-section-item">Home</a>
+                        <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                     </div>
                 </div>
                 <div class="nav-section">
                     <button class="nav-section-title">About Us</button>
                     <div class="nav-dropdown">
-                        <a href="about.html" class="nav-section-item">Our Mission</a>
-                        <a href="about.html" class="nav-section-item">We Focus on Bringing You</a>
-                        <a href="about.html" class="nav-section-item">Our Commitment</a>
+                        <a href="about.html" class="nav-section-item">About</a>
+                        <a href="settings.html" class="nav-section-item">Settings</a>
                     </div>
                 </div>
                 <div class="nav-section">
@@ -85,13 +95,13 @@
             <div class="nav-mobile" id="nav-mobile">
                 <div class="nav-section">
                     <div class="nav-section-title">News</div>
-                    <a href="#" class="nav-section-item">Game Updates</a>
+                    <a href="index.html" class="nav-section-item">Home</a>
+                    <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">About Us</div>
-                    <a href="about.html" class="nav-section-item">Our Mission</a>
-                    <a href="about.html" class="nav-section-item">We Focus on Bringing You</a>
-                    <a href="about.html" class="nav-section-item">Our Commitment</a>
+                    <a href="about.html" class="nav-section-item">About</a>
+                    <a href="settings.html" class="nav-section-item">Settings</a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Follow Us</div>
@@ -127,7 +137,7 @@
         </section>
 
         <!-- Game Update Section -->
-        <section class="game-update-section">
+        <section class="game-update-section" id="game-update">
             <div class="section-indicator">
                 <div class="blue-line"></div>
                 <span class="section-text">Game Updates</span>
@@ -178,7 +188,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, getDocs, orderBy, limit, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         // Firebase configuration - Your actual Firebase project config
         const firebaseConfig = {
@@ -199,12 +209,16 @@
         window.db = db;
         window.getDocs = getDocs;
         window.collection = collection;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
         window.query = query;
         window.orderBy = orderBy;
         window.limit = limit;
     </script>
     
     <script src="script.js"></script>
+    <script src="firebase-notice.js"></script>
     <script src="mobile-nav.js"></script>
     <script src="search.js"></script>
 </body>

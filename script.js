@@ -866,13 +866,171 @@ function displayPostsFallback() {
     `;
 }
 
+// Load message banner from Firebase
+async function loadMessageBanner() {
+    try {
+        console.log('=== LOADING MESSAGE BANNER ===');
+        console.log('Firebase db object:', typeof db);
+        console.log('Collection function:', typeof collection);
+        console.log('GetDocs function:', typeof getDocs);
+        
+        // Check if Firebase is available
+        if (typeof db === 'undefined') {
+            console.error('Firebase db is undefined!');
+            document.getElementById('message-banner').style.display = 'none';
+            return;
+        }
+        
+        if (typeof collection === 'undefined') {
+            console.error('Firebase collection function is undefined!');
+            document.getElementById('message-banner').style.display = 'none';
+            return;
+        }
+        
+        console.log('Firebase is available, proceeding...');
+        
+        // Get message settings from Firebase
+        const messageRef = collection(db, 'messageSettings');
+        const messageSnapshot = await getDocs(messageRef);
+        
+        if (!messageSnapshot.empty) {
+            const settings = messageSnapshot.docs[0].data();
+            console.log('Message settings from Firebase:', settings);
+            console.log('Enabled:', settings.enabled);
+            console.log('Message:', settings.message);
+            
+            // Check if message is enabled
+            if (settings.enabled) {
+                const messageText = settings.message || 'My message...';
+                console.log('Setting banner text to:', messageText);
+                
+                document.getElementById('message-text').textContent = messageText;
+                document.getElementById('message-banner').style.display = 'block';
+                
+                // Add class to header and main content to adjust positioning
+                document.querySelector('.header').classList.add('with-banner');
+                document.querySelector('.main-content').classList.add('with-banner');
+                
+                console.log('Message banner displayed with text:', messageText);
+            } else {
+                document.getElementById('message-banner').style.display = 'none';
+                
+                // Remove class from header and main content
+                document.querySelector('.header').classList.remove('with-banner');
+                document.querySelector('.main-content').classList.remove('with-banner');
+                
+                console.log('Message banner hidden - disabled');
+            }
+        } else {
+            console.log('No message settings found in Firebase');
+            document.getElementById('message-banner').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading message banner:', error);
+        document.getElementById('message-banner').style.display = 'none';
+    }
+}
+
+// Refresh banner when settings change
+function refreshBanner() {
+    console.log('Refreshing banner...');
+    loadMessageBanner();
+}
+
+// Test banner display
+function testBannerDisplay() {
+    const banner = document.getElementById('message-banner');
+    if (banner) {
+        console.log('Banner element found:', banner);
+        console.log('Banner display style:', banner.style.display);
+        console.log('Banner computed style:', window.getComputedStyle(banner).display);
+        
+        // Temporarily show banner for testing
+        banner.style.display = 'block';
+        banner.style.background = '#ff6b35'; // Orange for testing
+        setTimeout(() => {
+            banner.style.background = '#2196F3'; // Back to blue
+            loadMessageBanner(); // Reload proper settings
+        }, 2000);
+    } else {
+        console.error('Banner element not found!');
+    }
+}
+
+// Test Firebase connection directly
+async function testFirebaseConnection() {
+    try {
+        console.log('=== TESTING FIREBASE CONNECTION ===');
+        console.log('db:', db);
+        console.log('collection:', collection);
+        console.log('getDocs:', getDocs);
+        
+        if (typeof db === 'undefined') {
+            console.error('Firebase db is undefined!');
+            return;
+        }
+        
+        const testRef = collection(db, 'messageSettings');
+        console.log('Collection reference created:', testRef);
+        
+        const snapshot = await getDocs(testRef);
+        console.log('Snapshot:', snapshot);
+        console.log('Empty:', snapshot.empty);
+        console.log('Size:', snapshot.size);
+        
+        if (!snapshot.empty) {
+            snapshot.forEach(doc => {
+                console.log('Document ID:', doc.id);
+                console.log('Document data:', doc.data());
+            });
+        }
+        
+        console.log('Firebase connection test completed successfully!');
+    } catch (error) {
+        console.error('Firebase connection test failed:', error);
+    }
+}
+
+// Force show banner with custom message (for testing)
+function forceShowBanner(message = 'Test message from console') {
+    console.log('Forcing banner to show with message:', message);
+    const banner = document.getElementById('message-banner');
+    const bannerText = document.getElementById('message-text');
+    
+    if (banner && bannerText) {
+        bannerText.textContent = message;
+        banner.style.display = 'block';
+        document.querySelector('.header').classList.add('with-banner');
+        document.querySelector('.main-content').classList.add('with-banner');
+        console.log('Banner forced to show!');
+    } else {
+        console.error('Banner elements not found!');
+    }
+}
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     loadAllNews();
     loadGameUpdates();
     loadSocialMediaSettings();
     loadPosts();
+    loadMessageBanner();
     initializeSearch();
+    
+    // Listen for storage changes (when settings are updated in another tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'messageSettings') {
+            console.log('Message settings changed, refreshing banner...');
+            refreshBanner();
+        }
+    });
+    
+    // Make functions available globally for testing
+    window.testBannerDisplay = testBannerDisplay;
+    window.refreshBanner = refreshBanner;
+    window.loadMessageBanner = loadMessageBanner;
+    window.testFirebaseConnection = testFirebaseConnection;
+    window.forceShowBanner = forceShowBanner;
 });
 
 // Handle window resize for responsive behavior - handled in DOMContentLoaded

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - EHAMBURG DAILY</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="webfavehd.jpg">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Website Notice Banner -->
+    <div class="notice-banner" id="website-notice" style="display: none;">
+        <div class="notice-content">
+            <div class="notice-icon">
+                <i>!</i>
+            </div>
+            <span class="notice-text">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="dark ehd logo.png" alt="EHAMBURG DAILY" class="main-logo">
+            </div>
+            <nav class="nav-desktop">
+                <div class="nav-section">
+                    <button class="nav-section-title">News</button>
+                    <div class="nav-dropdown">
+                        <a href="index.html" class="nav-section-item">Home</a>
+                        <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <button class="nav-section-title">About Us</button>
+                    <div class="nav-dropdown">
+                        <a href="about.html" class="nav-section-item">About</a>
+                        <a href="settings.html" class="nav-section-item">Settings</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <button class="nav-section-title">Follow Us</button>
+                    <div class="nav-dropdown">
+                        <div class="social-links">
+                            <a href="https://x.com/ehamburg82588?s=21" target="_blank" class="social-link">
+                                <img src="x logo.png" alt="X (Twitter)">
+                            </a>
+                            <a href="https://www.tiktok.com/@ehamburgdaily" target="_blank" class="social-link">
+                                <img src="tiktok logo.png" alt="TikTok">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search..." class="search-input">
+                <div id="search-results" class="search-results"></div>
+            </div>
+            
+            <button class="hamburger-menu" id="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <!-- Mobile Navigation Menu -->
+            <div class="nav-mobile" id="nav-mobile">
+                <div class="nav-section">
+                    <div class="nav-section-title">News</div>
+                    <a href="index.html" class="nav-section-item">Home</a>
+                    <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">About Us</div>
+                    <a href="about.html" class="nav-section-item">About</a>
+                    <a href="settings.html" class="nav-section-item">Settings</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Follow Us</div>
+                    <div class="social-links">
+                        <a href="https://x.com/ehamburg82588?s=21" target="_blank" class="social-link">
+                            <img src="x logo.png" alt="X (Twitter)">
+                        </a>
+                        <a href="https://www.tiktok.com/@ehamburgdaily" target="_blank" class="social-link">
+                            <img src="tiktok logo.png" alt="TikTok">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
+    <!-- Message Container -->
+    <div id="message-container" class="message-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <section class="settings-section">
+                <div class="section-indicator">
+                    <div class="blue-line"></div>
+                    <span class="section-text">Notice Banner Settings</span>
+                </div>
+                
+                <div class="settings-container">
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label for="notice-enabled">Enable Notice Banner</label>
+                            <input type="checkbox" id="notice-enabled" class="checkbox-input">
+                            <span class="checkbox-label">Show the notice banner at the top of the website</span>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button id="save-settings" class="save-btn">Save Settings</button>
+                            <button id="test-banner" class="test-btn">Test Banner</button>
+                        </div>
+                        
+                        <div class="settings-status">
+                            <div class="status-item">
+                                <span class="status-label">Banner Status:</span>
+                                <span class="status-value" id="banner-status">Loading...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Last Updated:</span>
+                                <span class="status-value" id="last-updated">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-actions">
+                            <h3>Quick Actions</h3>
+                            <div class="action-buttons">
+                                <button id="refresh-banner" class="action-btn">Refresh Banner</button>
+                                <button id="clear-cache" class="action-btn">Clear Cache</button>
+                                <button id="view-logs" class="action-btn">View Logs</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 EHAMBURG DAILY. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7I9K8ds6Px60jMm71Kt7weVAX-vhcM8w",
+            authDomain: "ehamburg-90958.firebaseapp.com",
+            projectId: "ehamburg-90958",
+            storageBucket: "ehamburg-90958.firebasestorage.app",
+            messagingSenderId: "166375320407",
+            appId: "1:166375320407:web:1e3b0b85a410522bf4ec12",
+            measurementId: "G-FLLYGR93PX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.db = db;
+        window.getDocs = getDocs;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.limit = limit;
+
+        // Load current settings
+        async function loadSettings() {
+            try {
+                const noticeRef = collection(db, 'notice');
+                const noticeSnapshot = await getDocs(noticeRef);
+                
+                if (!noticeSnapshot.empty) {
+                    const settings = noticeSnapshot.docs[0].data();
+                    document.getElementById('notice-enabled').checked = settings.enabled || false;
+                    
+                    // Update status display
+                    updateStatusDisplay(settings);
+                } else {
+                    updateStatusDisplay({ enabled: false, lastUpdated: null });
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                updateStatusDisplay({ enabled: false, lastUpdated: null, error: true });
+            }
+        }
+
+        // Update status display
+        function updateStatusDisplay(settings) {
+            const bannerStatus = document.getElementById('banner-status');
+            const lastUpdated = document.getElementById('last-updated');
+            
+            if (settings.error) {
+                bannerStatus.textContent = 'Error';
+                bannerStatus.style.color = '#dc3545';
+                lastUpdated.textContent = 'Failed to load';
+            } else if (settings.enabled) {
+                bannerStatus.textContent = 'Enabled';
+                bannerStatus.style.color = '#28a745';
+            } else {
+                bannerStatus.textContent = 'Disabled';
+                bannerStatus.style.color = '#6c757d';
+            }
+            
+            if (settings.lastUpdated) {
+                const date = new Date(settings.lastUpdated);
+                lastUpdated.textContent = date.toLocaleString();
+            } else {
+                lastUpdated.textContent = 'Never';
+            }
+        }
+
+        // Show message toast
+        function showMessage(type, message, duration = 5000) {
+            const container = document.getElementById('message-container');
+            const messageId = 'msg-' + Date.now();
+            
+            const toast = document.createElement('div');
+            toast.id = messageId;
+            toast.className = `message-toast ${type}`;
+            toast.innerHTML = `
+                <div class="message-icon">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</div>
+                <div class="message-text">${message}</div>
+                <button class="message-close" onclick="removeMessage('${messageId}')">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                removeMessage(messageId);
+            }, duration);
+        }
+
+        // Remove message toast
+        function removeMessage(messageId) {
+            const message = document.getElementById(messageId);
+            if (message) {
+                message.classList.add('removing');
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 300);
+            }
+        }
+
+        // Save settings
+        async function saveSettings() {
+            try {
+                const enabled = document.getElementById('notice-enabled').checked;
+                
+                const noticeRef = collection(db, 'notice');
+                const noticeSnapshot = await getDocs(noticeRef);
+                
+                if (!noticeSnapshot.empty) {
+                    // Update existing document - only update enabled field
+                    const docId = noticeSnapshot.docs[0].id;
+                    const existingData = noticeSnapshot.docs[0].data();
+                    
+                    const settings = {
+                        ...existingData, // Keep existing text and other fields
+                        enabled: enabled,
+                        lastUpdated: new Date()
+                    };
+                    
+                    await updateDoc(doc(db, 'notice', docId), settings);
+                } else {
+                    // Create new document with default text
+                    const settings = {
+                        enabled: enabled,
+                        text: "Welcome to EHAMBURG DAILY!",
+                        lastUpdated: new Date()
+                    };
+                    await addDoc(noticeRef, settings);
+                }
+                
+                showMessage('success', 'Notice banner settings saved successfully!');
+                console.log('Settings saved:', { enabled: enabled });
+                
+                // Update status display
+                updateStatusDisplay({ enabled: enabled, lastUpdated: new Date() });
+                
+                // Automatically update notice banner on all pages
+                updateNoticeBannerOnAllPages(enabled);
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showMessage('error', 'Error saving settings. Please try again.');
+            }
+        }
+
+        // Update notice banner on all pages
+        function updateNoticeBannerOnAllPages(enabled) {
+            console.log('Updating notice banner on all pages, enabled:', enabled);
+            
+            // Update current page if it has notice banner
+            const banner = document.getElementById('website-notice');
+            if (banner) {
+                if (enabled) {
+                    banner.style.display = 'block';
+                    // Add class to header and main content to adjust positioning
+                    document.querySelector('.header').classList.add('with-notice');
+                    document.querySelector('.main-content').classList.add('with-notice');
+                    
+                    // Load content from Firebase when enabled
+                    if (typeof loadNoticeBanner === 'function') {
+                        loadNoticeBanner();
+                    }
+                    console.log('Notice banner enabled on current page');
+                } else {
+                    banner.style.display = 'none';
+                    // Remove class from header and main content
+                    document.querySelector('.header').classList.remove('with-notice');
+                    document.querySelector('.main-content').classList.remove('with-notice');
+                    console.log('Notice banner disabled on current page');
+                }
+            }
+            
+            // Trigger refresh on other pages via localStorage
+            localStorage.setItem('noticeBannerUpdate', JSON.stringify({
+                enabled: enabled,
+                timestamp: Date.now()
+            }));
+            
+            // Dispatch custom event for other pages
+            window.dispatchEvent(new CustomEvent('noticeBannerUpdate', {
+                detail: { enabled: enabled }
+            }));
+        }
+
+        // Test banner
+        function testBanner() {
+            const enabled = document.getElementById('notice-enabled').checked;
+            if (enabled) {
+                showMessage('info', 'Notice banner is enabled! Check your website to see the banner.');
+            } else {
+                showMessage('info', 'Notice banner is disabled. Enable it first to test.');
+            }
+        }
+
+        // Refresh banner
+        function refreshBanner() {
+            loadSettings();
+            showMessage('info', 'Banner settings refreshed!');
+        }
+
+        // Clear cache
+        function clearCache() {
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            showMessage('info', 'Cache cleared! Please refresh the page.');
+        }
+
+        // View logs
+        function viewLogs() {
+            const logs = [
+                'Banner Status: ' + document.getElementById('banner-status').textContent,
+                'Last Updated: ' + document.getElementById('last-updated').textContent,
+                'Current Time: ' + new Date().toLocaleString(),
+                'User Agent: ' + navigator.userAgent
+            ];
+            showMessage('info', 'System Logs: ' + logs.join(' | '));
+        }
+
+        // Event listeners
+        document.getElementById('save-settings').addEventListener('click', saveSettings);
+        document.getElementById('test-banner').addEventListener('click', testBanner);
+        document.getElementById('refresh-banner').addEventListener('click', refreshBanner);
+        document.getElementById('clear-cache').addEventListener('click', clearCache);
+        document.getElementById('view-logs').addEventListener('click', viewLogs);
+
+        // Load settings when page loads
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+
+    <script src="script.js"></script>
+    <script src="firebase-notice.js"></script>
+    <script src="mobile-nav.js"></script>
+    <script src="search.js"></script>
+</body>
+</html>
