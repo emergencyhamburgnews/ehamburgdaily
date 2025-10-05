@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>About - EHAMBURG DAILY</title>
+    <title>Credits - EHAMBURG DAILY</title>
     <link rel="icon" type="image/jpeg" href="webfavehd.jpg">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="about-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -131,48 +130,27 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="about-main">
-            <div class="about-container">
-                <div class="about-hero">
-                    <h1 class="about-title">About Us</h1>
-                    <p class="about-subtitle">Welcome to EHamburg Daily, your trusted source for the latest updates, news, and community announcements.</p>
+        <div class="credits-main">
+            <div class="credits-container">
+                <div class="credits-hero">
+                    <h1 class="credits-title">Development Team Credits</h1>
+                    <p class="credits-subtitle">Official Emergency Hamburg Credit</p>
                 </div>
 
-                <div class="mission-section">
-                    <h2 class="section-title">Our Mission</h2>
-                    <p class="mission-text">Our mission is to deliver reliable, clear, and up-to-date information that keeps you informed and connected.</p>
+                <!-- Loading Indicator -->
+                <div class="profiles-loading" id="profiles-loading">
+                    <div class="loading-text">Loading developer profiles...</div>
+                    <div class="loading-spinner-small"></div>
                 </div>
 
-                <div class="focus-section">
-                    <h2 class="section-title">What We Focus On</h2>
-                    <div class="focus-grid">
-                        <div class="focus-card">
-                            <div class="focus-icon">📰</div>
-                            <h3 class="focus-title">Latest News</h3>
-                            <p class="focus-text">Stay updated with the most recent developments and announcements.</p>
-                        </div>
-                        <div class="focus-card">
-                            <div class="focus-icon">🎮</div>
-                            <h3 class="focus-title">Game Updates</h3>
-                            <p class="focus-text">Get the latest information about game features, updates, and improvements.</p>
-                        </div>
-                        <div class="focus-card">
-                            <div class="focus-icon">👥</div>
-                            <h3 class="focus-title">Community</h3>
-                            <p class="focus-text">Connect with other players and stay engaged with the community.</p>
-                        </div>
+                <!-- Development Team Grid -->
+                <div class="dev-team-section">
+                    <h2 class="section-title">Core Development Team</h2>
+                    <div class="dev-grid" id="dev-grid">
+                        <!-- Developer profiles will be dynamically loaded here -->
                     </div>
                 </div>
 
-                <div class="commitment-section">
-                    <h2 class="section-title">Our Commitment</h2>
-                    <p class="commitment-text">We are committed to providing accurate, timely, and valuable information that helps you stay informed and make the most of your experience.</p>
-                </div>
-
-                <div class="thank-you-card">
-                    <h2 class="thank-you-title">Thank You</h2>
-                    <p class="thank-you-text">Thank you for being part of our community. We appreciate your support and look forward to continuing to serve you with the best information and updates.</p>
-                </div>
             </div>
         </div>
     </main>
@@ -220,5 +198,6 @@
     <script src="firebase-notice.js"></script>
     <script src="mobile-nav.js"></script>
     <script src="search.js"></script>
+    <script src="credits.js"></script>
 </body>
 </html>
