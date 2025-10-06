@@ -3,37 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>EHAMBURG DAILY</title>
-    
-    <!-- Favicon -->
+    <title>Emergency Hamburg - EHAMBURG DAILY</title>
     <link rel="icon" type="image/jpeg" href="webfavehd.jpg">
-    
-    <!-- Open Graph Meta Tags for Social Media Sharing -->
-    <meta property="og:title" content="EHAMBURG DAILY" id="og-title">
-    <meta property="og:description" content="Latest news and updates from EHAMBURG DAILY" id="og-description">
-    <meta property="og:image" content="./news1.jpg" id="og-image">
-    <meta property="og:image:secure_url" content="./news1.jpg" id="og-image-secure">
-    <meta property="og:image:type" content="image/jpeg" id="og-image-type">
-    <meta property="og:image:width" content="1200" id="og-image-width">
-    <meta property="og:image:height" content="630" id="og-image-height">
-    <meta property="og:image:alt" content="EHAMBURG DAILY News" id="og-image-alt">
-    <meta property="og:url" content="" id="og-url">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="EHAMBURG DAILY">
-    
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" id="twitter-card">
-    <meta name="twitter:title" content="EHAMBURG DAILY" id="twitter-title">
-    <meta name="twitter:description" content="Latest news and updates from EHAMBURG DAILY" id="twitter-description">
-    <meta name="twitter:image" content="./news1.jpg" id="twitter-image">
-    <meta name="twitter:image:alt" content="EHAMBURG DAILY News" id="twitter-image-alt">
-    
-    <!-- General Meta Tags -->
-    <meta name="description" content="Latest news and updates from EHAMBURG DAILY" id="meta-description">
-    <meta name="keywords" content="ehamburg, news, daily, updates, hamburg, emergency">
-    
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Website Notice Banner -->
@@ -118,6 +91,7 @@
                     <div id="search-results-content"></div>
                 </div>
             </div>
+            
             <button class="hamburger-menu" id="hamburger-menu">
                 <img src="menuicon.png" alt="Menu" class="menu-icon">
             </button>
@@ -158,53 +132,111 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="container">
-            <!-- News Section -->
-            <section class="news-section">
-            <div class="section-indicator">
-                <div class="blue-line"></div>
-                <span class="section-text">News</span>
-            </div>
-            
-            <div class="news-grid" id="news-grid">
-                <!-- News articles will be dynamically loaded here -->
-            </div>
-        </section>
-
-        <!-- Game Update Section -->
-        <section class="game-update-section" id="game-update">
-            <div class="section-indicator">
-                <div class="blue-line"></div>
-                <span class="section-text">Game Updates</span>
-            </div>
-            
-            <div class="game-update-container">
-                <div class="game-update-content">
-                    <h2 class="game-update-title" id="game-update-title">Loading...</h2>
-                    <p class="game-update-info" id="game-update-info">Loading update information...</p>
-                </div>
+        <div class="emergency-hamburg-main">
+            <div class="emergency-hamburg-container">
                 
-                <div class="language-selector">
-                    <button class="lang-btn active" data-lang="en">English</button>
-                    <button class="lang-btn" data-lang="de">Deutsch</button>
+                <!-- Hero Section -->
+                <div class="emergency-hamburg-hero">
+                    <div class="hero-content">
+                        <h1 class="emergency-hamburg-title">Emergency Hamburg</h1>
+                        <p class="emergency-hamburg-subtitle">Experience realistic emergency services role-play in the German city of Hamburg</p>
+                        
+                        <!-- Image Slideshow -->
+                        <div class="image-slideshow">
+                            <div class="slideshow-container">
+                                <div class="slide active">
+                                    <img src="ehimg1.jpg" alt="Emergency Hamburg Screenshot 1">
+                                </div>
+                                <div class="slide">
+                                    <img src="ehimg2.jpg" alt="Emergency Hamburg Screenshot 2">
+                                </div>
+                                <div class="slide">
+                                    <img src="ehimg3.jpg" alt="Emergency Hamburg Screenshot 3">
+                                </div>
+                                
+                                <!-- Navigation dots -->
+                                <div class="slide-dots">
+                                    <span class="dot active" data-slide="0"></span>
+                                    <span class="dot" data-slide="1"></span>
+                                    <span class="dot" data-slide="2"></span>
+                                </div>
+                                
+                                <!-- Navigation arrows -->
+                                <button class="slide-nav prev" id="prevSlide">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
+                                    </svg>
+                                </button>
+                                <button class="slide-nav next" id="nextSlide">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9,18 15,12 9,6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Posts Section -->
-        <section class="posts-section">
-            <div class="section-indicator">
-                <div class="gray-line"></div>
-                <span class="gray-section-text">Latest Posts</span>
-            </div>
-            
-            <div class="posts-container">
-                <div class="posts-grid" id="posts-grid">
-                    <div class="posts-loading">Loading latest posts...</div>
+                <!-- Game Description -->
+                <div class="game-description-section">
+                    <div class="description-content">
+                        <h2 class="section-title">About Emergency Hamburg</h2>
+                        <p class="game-description">
+                            Emergency Hamburg is an emergency services role-playing game on the Roblox platform, where you can be a police officer, citizen, bus driver, car mechanic, truck driver, firefighter, medic, or criminal in the German city Hamburg.
+                        </p>
+                        
+                        <!-- Play Button -->
+                        <div class="play-button-container">
+                            <a href="https://www.roblox.com/games/7711635737/Emergency-Hamburg" target="_blank" class="play-button">
+                                <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <polygon points="5,3 19,12 5,21" fill="currentColor"></polygon>
+                                </svg>
+                                Play on Roblox Now
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
 
+                <!-- Roles Section -->
+                <div class="roles-section">
+                    <h2 class="section-title">Available Roles</h2>
+                    <div class="roles-grid">
+                        <div class="role-card">
+                            <h3 class="role-title">Police Officer</h3>
+                            <p class="role-description">Maintain law and order in Hamburg</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Firefighter</h3>
+                            <p class="role-description">Respond to emergency fire situations</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Medic</h3>
+                            <p class="role-description">Provide medical assistance to citizens</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Citizen</h3>
+                            <p class="role-description">Live your daily life in Hamburg</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Bus Driver</h3>
+                            <p class="role-description">Transport citizens around the city</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Car Mechanic</h3>
+                            <p class="role-description">Repair and maintain vehicles</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Truck Driver</h3>
+                            <p class="role-description">Deliver goods across Hamburg</p>
+                        </div>
+                        <div class="role-card">
+                            <h3 class="role-title">Criminal</h3>
+                            <p class="role-description">Challenge the law enforcement</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </main>
 
@@ -214,11 +246,6 @@
             <p>&copy; 2025 EHAMBURG DAILY. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loading-spinner">
-        <div class="spinner"></div>
-    </div>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -256,5 +283,6 @@
     <script src="firebase-notice.js"></script>
     <script src="mobile-nav.js"></script>
     <script src="search.js"></script>
+    <script src="emergency-hamburg.js"></script>
 </body>
 </html>

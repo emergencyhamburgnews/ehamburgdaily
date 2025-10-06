@@ -87,7 +87,7 @@
 .focus-card {
     background: #ffffff;
     padding: 40px 30px;
-    border-radius: 16px;
+    border-radius: 0;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     text-align: center;
     border: 1px solid #f0f0f0;
@@ -198,7 +198,7 @@
     text-align: center;
     background: linear-gradient(135deg, #ff6b35, #ff8c42);
     padding: 60px 40px;
-    border-radius: 20px;
+    border-radius: 0;
     color: white;
     position: relative;
     overflow: hidden;
@@ -244,7 +244,7 @@
 .thank-you-card {
     background: #ffffff;
     padding: 60px 40px;
-    border-radius: 20px;
+    border-radius: 0;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
     text-align: center;
     border: 2px solid #ff6b35;
@@ -259,7 +259,7 @@
     right: -2px;
     bottom: -2px;
     background: linear-gradient(45deg, #ff6b35, #ff8c42, #ff6b35);
-    border-radius: 20px;
+    border-radius: 0;
     z-index: -1;
 }
 

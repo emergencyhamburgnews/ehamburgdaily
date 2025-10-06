@@ -119,7 +119,11 @@ function showSearchSuggestions() {
                     <div class="search-category-title">Recent Searches</div>
                     ${recentSearches.slice(0, 3).map(search => 
                         `<div class="search-suggestion-item" data-search="${search}">
-                            <span class="search-suggestion-icon">•</span> ${search}
+                            <span class="search-suggestion-icon">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="8"></circle>
+                                </svg>
+                            </span> ${search}
                         </div>`
                     ).join('')}
                 </div>
@@ -155,193 +159,58 @@ function performSearch(query) {
     const searchResults = document.getElementById('search-results');
     const results = [];
     
-    console.log('🔍 Searching for:', query);
+    console.log('🔍 Searching for:', query, 'on page:', document.title);
     
     // Normalize query for better matching
     const normalizedQuery = query.toLowerCase().trim();
     
-    // Search in news articles (if on home page)
-    const newsItems = document.querySelectorAll('.news-item');
-    newsItems.forEach((item, index) => {
-        const title = item.querySelector('.news-item-title')?.textContent || '';
-        const description = item.querySelector('.news-item-description')?.textContent || '';
-        const date = item.querySelector('.news-item-date')?.textContent || '';
-        
-        if (title.toLowerCase().includes(query.toLowerCase()) || 
-            description.toLowerCase().includes(query.toLowerCase()) ||
-            date.toLowerCase().includes(query.toLowerCase())) {
-            
-            results.push({
-                type: 'news',
-                title: title,
-                description: description,
-                date: date,
-                element: item,
-                index: index
-            });
-        }
-    });
+    // Clear previous results cache
+    window.searchElementsCache = [];
     
-    // Search in posts (if on home page)
-    const postItems = document.querySelectorAll('.post-item');
-    postItems.forEach((item, index) => {
-        const title = item.querySelector('.post-title')?.textContent || '';
-        const date = item.querySelector('.post-date')?.textContent || '';
-        
-        if (title.toLowerCase().includes(query.toLowerCase()) || 
-            date.toLowerCase().includes(query.toLowerCase())) {
-            
-            results.push({
-                type: 'post',
-                title: title,
-                description: `Post from ${date}`,
-                date: date,
-                element: item,
-                index: index
-            });
-        }
-    });
-    
-    // Also search in posts grid content (fallback for when posts are loading)
-    const postsGrid = document.getElementById('posts-grid');
-    if (postsGrid) {
-        const postsGridText = postsGrid.textContent || '';
-        if (postsGridText.toLowerCase().includes(query.toLowerCase()) && 
-            !postsGridText.includes('Loading latest posts') && 
-            !postsGridText.includes('No Posts Yet')) {
-            
-            // Find the specific post that matches
-            const postElements = postsGrid.querySelectorAll('.post-item');
-            postElements.forEach((post, index) => {
-                const title = post.querySelector('.post-title')?.textContent || '';
-                const date = post.querySelector('.post-date')?.textContent || '';
-                
-                if (title.toLowerCase().includes(query.toLowerCase()) || 
-                    date.toLowerCase().includes(query.toLowerCase())) {
-                    
-                    // Check if this result is already added
-                    const isDuplicate = results.some(result => 
-                        result.type === 'post' && result.title === title
-                    );
-                    
-                    if (!isDuplicate) {
-                        results.push({
-                            type: 'post',
-                            title: title,
-                            description: `Post from ${date}`,
-                            date: date,
-                            element: post,
-                            index: index
-                        });
-                    }
-                }
-            });
-        }
-    }
-    
-    // Search in game updates
-    const gameUpdateTitle = document.querySelector('.game-update-title')?.textContent || '';
-    const gameUpdateInfo = document.querySelector('.game-update-info')?.textContent || '';
-    
-    if (gameUpdateTitle.toLowerCase().includes(query.toLowerCase()) || 
-        gameUpdateInfo.toLowerCase().includes(query.toLowerCase())) {
-        
-        results.push({
-            type: 'game-update',
-            title: gameUpdateTitle,
-            description: gameUpdateInfo,
-            element: document.querySelector('.game-update-container'),
-            index: 0
-        });
-    }
-    
-    // Search in section headers and titles
-    const sectionTexts = document.querySelectorAll('.section-text, .gray-section-text');
-    sectionTexts.forEach((section, index) => {
-        const text = section.textContent || '';
-        if (text.toLowerCase().includes(query.toLowerCase())) {
-            results.push({
-                type: 'section',
-                title: text,
-                description: 'Section header',
-                element: section,
-                index: index
-            });
-        }
-    });
-    
-    // Search in credits/developer content
-    const devCards = document.querySelectorAll('.dev-card');
-    devCards.forEach((card, index) => {
-        const searchContent = card.getAttribute('data-search-content') || '';
-        const devName = card.querySelector('.dev-name')?.textContent || '';
-        const devUsername = card.querySelector('.dev-username')?.textContent || '';
-        const roles = Array.from(card.querySelectorAll('.role-tag')).map(tag => tag.textContent).join(' ');
-        
-        const combinedContent = `${searchContent} ${devName} ${devUsername} ${roles}`;
-        
-        if (combinedContent.toLowerCase().includes(query.toLowerCase())) {
-            results.push({
-                type: 'developer',
-                title: devName,
-                description: `Developer: ${roles}`,
-                element: card,
-                index: index
-            });
-        }
-    });
-    
-    // Search in credits text content
-    const creditsTextElements = document.querySelectorAll('.credits-title, .credits-subtitle, .credits-text, .contact-text, .stat-label, .contact-item');
-    creditsTextElements.forEach((element, index) => {
-        const text = element.textContent || '';
-        if (text.toLowerCase().includes(query.toLowerCase())) {
-            const isDuplicate = results.some(result => result.title === text);
-            if (!isDuplicate) {
-                results.push({
-                    type: 'credits',
-                    title: text.length > 50 ? text.substring(0, 50) + '...' : text,
-                    description: 'Credits page content',
-                    element: element,
-                    index: index
-                });
-            }
-        }
-    });
-    
-    // Comprehensive search across ALL text content
-    const searchableElements = document.querySelectorAll(`
-        h1, h2, h3, h4, h5, h6, p, span, div, li, td, th, label, button,
+    // Universal search - works on ALL pages
+    // This will search through ALL text content on the page regardless of page type
+    const allTextElements = document.querySelectorAll(`
+        h1, h2, h3, h4, h5, h6, p, span, div, li, td, th, label, button, a,
         .news-item-title, .news-item-description, .news-item-date,
         .post-title, .post-date, .game-update-title, .game-update-info,
         .section-text, .gray-section-text, .mission-text, .focus-text, .commitment-text,
         .dev-name, .dev-username, .role-tag, .credits-title, .credits-subtitle,
         .about-title, .about-subtitle, .section-title, .focus-title, .thank-you-title,
         .contact-item, .stat-label, .nav-section-item, .nav-section-title,
+        .emergency-hamburg-title, .role-title, .game-description, .play-button,
+        .settings-section, .form-group, .checkbox-label, .status-label, .status-value,
         [data-search-content]
     `);
     
+    console.log('📊 Found', allTextElements.length, 'searchable elements on this page');
+    
     // Create a Set to track unique results and avoid duplicates
     const uniqueResults = new Set();
+    let elementIndex = 0;
     
-    searchableElements.forEach((element, index) => {
+    allTextElements.forEach((element) => {
         const text = element.textContent || '';
         const searchContent = element.getAttribute('data-search-content') || '';
         const combinedText = `${text} ${searchContent}`.trim();
         
-        // Skip if text is too short
-        if (combinedText.length < 2) return;
+        // Skip if text is too short, invisible, or is a script/style element
+        if (combinedText.length < 2 || 
+            element.offsetParent === null || 
+            ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(element.tagName) ||
+            element.style.display === 'none') {
+            return;
+        }
         
-        // Check if text matches query (partial matching)
+        // Check if text matches query (case insensitive)
         const textLower = combinedText.toLowerCase();
         if (textLower.includes(normalizedQuery)) {
             
-            // Determine content type and description
+            // Determine content type and description based on element and page
             let type = 'content';
             let description = 'Page content';
             let title = text.trim();
             
-            // Better type detection
+            // Smart type detection based on element classes and context
             if (element.classList.contains('news-item-title') || element.closest('.news-item')) {
                 type = 'news';
                 description = 'News article';
@@ -351,6 +220,9 @@ function performSearch(query) {
             } else if (element.classList.contains('dev-name') || element.closest('.dev-card')) {
                 type = 'developer';
                 description = 'Team member';
+                // For dev cards, show the name as title
+                const devName = element.closest('.dev-card')?.querySelector('.dev-name')?.textContent;
+                if (devName) title = devName;
             } else if (element.classList.contains('game-update-title') || element.closest('.game-update-container')) {
                 type = 'game-update';
                 description = 'Game update';
@@ -360,44 +232,187 @@ function performSearch(query) {
             } else if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(element.tagName)) {
                 type = 'heading';
                 description = 'Page heading';
-            } else if (element.classList.contains('role-tag')) {
-                type = 'developer';
-                description = 'Developer role';
-            } else if (element.classList.contains('nav-section-item') || element.classList.contains('nav-section-title')) {
-                type = 'navigation';
-                description = 'Navigation item';
+            } else if (element.classList.contains('emergency-hamburg-title') || element.classList.contains('role-title')) {
+                type = 'emergency-hamburg';
+                description = 'Emergency Hamburg content';
+            } else if (element.closest('.settings-section') || element.classList.contains('status-label')) {
+                type = 'settings';
+                description = 'Settings content';
+            } else if (element.classList.contains('about-title') || element.classList.contains('mission-text') || 
+                      element.classList.contains('focus-text') || element.classList.contains('commitment-text')) {
+                type = 'about';
+                description = 'About page content';
+            } else if (element.classList.contains('credits-title') || element.closest('.credits-main')) {
+                type = 'credits';
+                description = 'Credits content';
             }
             
             // Create unique key to avoid duplicates
-            const uniqueKey = `${type}-${title.substring(0, 30)}`;
+            const uniqueKey = `${type}-${title.substring(0, 50)}-${element.tagName}`;
             
             if (!uniqueResults.has(uniqueKey) && title.length > 0) {
                 uniqueResults.add(uniqueKey);
                 
-                // Highlight matching text
-                const highlightedTitle = highlightMatchingText(title, query);
+                // Store element in global cache with unique ID
+                const uniqueId = `search_${type}_${Date.now()}_${elementIndex++}`;
+                window.searchElementsCache.push({
+                    id: uniqueId,
+                    element: element,
+                    type: type
+                });
                 
                 results.push({
                     type: type,
                     title: title.length > 60 ? title.substring(0, 60) + '...' : title,
                     description: description,
                     element: element,
-                    index: results.length,
-                    highlightedTitle: highlightedTitle
+                    elementId: uniqueId,
+                    page: document.title.replace(' - EHAMBURG DAILY', '') || 'Home'
                 });
             }
         }
     });
     
     console.log(`📊 Found ${results.length} search results`);
-    
-    // Helper function to highlight matching text
-    function highlightMatchingText(text, query) {
-        const regex = new RegExp(`(${query})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
-    }
+    console.log('Cached elements:', window.searchElementsCache.length);
     
     displaySearchResults(results, query);
+}
+
+// New function to scroll to specific search element using cached elements
+function scrollToSearchElement(elementId) {
+    console.log('🎯 Attempting to scroll to element with ID:', elementId);
+    
+    const searchResults = document.getElementById('search-results');
+    const searchInput = document.getElementById('search-input');
+    
+    // Hide search results
+    if (searchResults) searchResults.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    
+    // Check if cache exists
+    if (!window.searchElementsCache || !Array.isArray(window.searchElementsCache)) {
+        console.error('❌ Search elements cache not found or invalid');
+        return;
+    }
+    
+    console.log('📋 Cache contains', window.searchElementsCache.length, 'elements');
+    
+    // Find the element in cache
+    const cachedItem = window.searchElementsCache.find(item => item.id === elementId);
+    
+    if (!cachedItem) {
+        console.error('❌ Element not found in cache. ID:', elementId);
+        console.log('Available cache IDs:', window.searchElementsCache.map(item => item.id));
+        return;
+    }
+    
+    if (!cachedItem.element) {
+        console.error('❌ Cached item has no element:', cachedItem);
+        return;
+    }
+    
+    console.log('✅ Found cached element:', cachedItem);
+    
+    // Check if element is still in DOM
+    if (!document.body.contains(cachedItem.element)) {
+        console.error('❌ Element is no longer in DOM:', cachedItem.element);
+        return;
+    }
+    
+    // Check if element is visible
+    const rect = cachedItem.element.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) {
+        console.warn('⚠️  Element appears to be hidden or has zero dimensions');
+    }
+    
+    console.log('📐 Element position:', {
+        top: cachedItem.element.offsetTop,
+        left: cachedItem.element.offsetLeft,
+        rect: rect
+    });
+    
+    // Scroll to element
+    scrollToElementWithOffset(cachedItem.element);
+    highlightElement(cachedItem.element, cachedItem.type);
+    
+    console.log('✅ Successfully scrolled to element');
+}
+
+// Function to scroll with mobile offset consideration
+function scrollToElementWithOffset(element) {
+    if (!element) {
+        console.error('❌ scrollToElementWithOffset: No element provided');
+        return;
+    }
+    
+    const isMobile = window.innerWidth <= 768;
+    const offset = isMobile ? 140 : 100;
+    
+    // Get element position relative to document
+    let elementPosition = 0;
+    let currentElement = element;
+    
+    // Calculate cumulative offset from document top
+    while (currentElement) {
+        elementPosition += currentElement.offsetTop;
+        currentElement = currentElement.offsetParent;
+    }
+    
+    const offsetPosition = Math.max(0, elementPosition - offset);
+    
+    console.log('📐 Scroll calculation:', {
+        elementOffsetTop: element.offsetTop,
+        calculatedPosition: elementPosition,
+        offset: offset,
+        finalScrollPosition: offsetPosition,
+        isMobile: isMobile
+    });
+    
+    // Try using element.scrollIntoView as fallback
+    try {
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+        
+        // Alternative method if the above doesn't work
+        setTimeout(() => {
+            const rect = element.getBoundingClientRect();
+            if (rect.top < 0 || rect.top > window.innerHeight) {
+                console.log('🔄 Using scrollIntoView fallback');
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start'
+                });
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Scroll error:', error);
+        // Final fallback
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start'
+        });
+    }
+}
+
+// Function to highlight an element
+function highlightElement(element, type) {
+    if (type === 'developer') {
+        element.style.backgroundColor = '#ff6b35';
+        element.style.color = '#ffffff';
+        setTimeout(() => {
+            element.style.backgroundColor = '';
+            element.style.color = '';
+        }, 3000);
+    } else {
+        element.style.backgroundColor = '#ffeb3b';
+        setTimeout(() => {
+            element.style.backgroundColor = '';
+        }, 3000);
+    }
 }
 
 function displaySearchResults(results, query) {
@@ -413,7 +428,12 @@ function displaySearchResults(results, query) {
     if (results.length === 0) {
         searchResultsContent.innerHTML = `
             <div class="search-no-results">
-                <div class="search-no-results-icon">•</div>
+                <div class="search-no-results-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21L16.5 16.5"></path>
+                    </svg>
+                </div>
                 <div class="search-no-results-text">No results found for "${query}"</div>
                 <div class="search-no-results-suggestion">Try different keywords or check spelling</div>
             </div>
@@ -424,7 +444,7 @@ function displaySearchResults(results, query) {
     
     // Group results by type
     const groupedResults = {};
-    results.forEach(result => {
+    results.forEach((result, globalIndex) => {
         if (!groupedResults[result.type]) {
             groupedResults[result.type] = [];
         }
@@ -433,15 +453,54 @@ function displaySearchResults(results, query) {
     
     // Define icons and labels for each type
     const typeConfig = {
-        'news': { icon: '•', label: 'News Articles' },
-        'post': { icon: '•', label: 'Posts' },
-        'game-update': { icon: '•', label: 'Game Updates' },
-        'developer': { icon: '•', label: 'Team Members' },
-        'section': { icon: '•', label: 'Sections' },
-        'heading': { icon: '•', label: 'Page Content' },
-        'credits': { icon: '•', label: 'Credits' },
-        'navigation': { icon: '•', label: 'Navigation' },
-        'content': { icon: '•', label: 'Content' }
+        'news': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2z"></path><path d="M6 12h2"></path><path d="M6 8h6"></path><path d="M6 16h4"></path></svg>', 
+            label: 'News Articles' 
+        },
+        'post': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14,2 14,8 20,8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10,9 9,9 8,9"></polyline></svg>', 
+            label: 'Posts' 
+        },
+        'game-update': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line><polygon points="12,7 15,12 9,12" fill="currentColor"></polygon></svg>', 
+            label: 'Game Updates' 
+        },
+        'developer': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>', 
+            label: 'Team Members' 
+        },
+        'section': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>', 
+            label: 'Sections' 
+        },
+        'heading': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,7 4,4 20,4 20,7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>', 
+            label: 'Page Content' 
+        },
+        'credits': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', 
+            label: 'Credits' 
+        },
+        'navigation': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>', 
+            label: 'Navigation' 
+        },
+        'content': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14,2 14,8 20,8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>', 
+            label: 'Content' 
+        },
+        'about': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>', 
+            label: 'About Content' 
+        },
+        'settings': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>', 
+            label: 'Settings' 
+        },
+        'emergency-hamburg': { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"></path><path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1h-8.515a2 2 0 0 0-1.414.586l-1.414 1.414A2 2 0 0 1 8.243 6.5H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h5.243a2 2 0 0 1 1.414.586l1.414 1.414A2 2 0 0 0 12.485 17H21z"></path></svg>', 
+            label: 'Emergency Hamburg' 
+        }
     };
     
     let html = `<div class="search-results-header">
@@ -449,7 +508,10 @@ function displaySearchResults(results, query) {
     </div>`;
     
     Object.keys(groupedResults).forEach(type => {
-        const config = typeConfig[type] || { icon: '📄', label: 'Content' };
+        const config = typeConfig[type] || { 
+            icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14,2 14,8 20,8"></polyline></svg>', 
+            label: 'Content' 
+        };
         const typeResults = groupedResults[type];
         
         html += `
@@ -462,12 +524,12 @@ function displaySearchResults(results, query) {
                 <div class="search-results-category-items">
         `;
         
-        typeResults.forEach(result => {
+        typeResults.forEach((result, resultIndex) => {
             const highlightedTitle = highlightText(result.title, query);
             const highlightedDescription = highlightText(result.description, query);
             
             html += `
-                <div class="search-result-item" onclick="selectSearchResult('${result.type}', ${result.index || 0})">
+                <div class="search-result-item" onclick="scrollToSearchElement('${result.elementId}')">
                     <div class="search-result-content">
                         <div class="search-result-title">${highlightedTitle}</div>
                         <div class="search-result-preview">${highlightedDescription}</div>
@@ -493,108 +555,6 @@ function highlightText(text, query) {
     return text.replace(regex, '<span class="search-highlight">$1</span>');
 }
 
-function selectSearchResult(type, index) {
-    const searchResults = document.getElementById('search-results');
-    const searchInput = document.getElementById('search-input');
-    
-    searchResults.style.display = 'none';
-    searchInput.value = '';
-    
-    if (type === 'news') {
-        const newsItems = document.querySelectorAll('.news-item');
-        if (newsItems[index]) {
-            newsItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            newsItems[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                newsItems[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'post') {
-        const postItems = document.querySelectorAll('.post-item');
-        if (postItems[index]) {
-            postItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            postItems[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                postItems[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'game-update') {
-        const gameUpdateContainer = document.querySelector('.game-update-container');
-        if (gameUpdateContainer) {
-            gameUpdateContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            gameUpdateContainer.style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                gameUpdateContainer.style.backgroundColor = '#ff6b35';
-            }, 3000);
-        }
-    } else if (type === 'section') {
-        const sectionElements = document.querySelectorAll('.section-text, .gray-section-text');
-        if (sectionElements[index]) {
-            sectionElements[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            sectionElements[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                sectionElements[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'heading') {
-        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        if (headings[index]) {
-            headings[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            headings[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                headings[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'developer') {
-        const devCards = document.querySelectorAll('.dev-card');
-        if (devCards[index]) {
-            devCards[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add blue highlight for developer cards
-            devCards[index].style.backgroundColor = '#007bff';
-            devCards[index].style.color = '#ffffff';
-            setTimeout(() => {
-                devCards[index].style.backgroundColor = '';
-                devCards[index].style.color = '';
-            }, 3000);
-        }
-    } else if (type === 'credits') {
-        const creditsElements = document.querySelectorAll('.credits-title, .credits-subtitle, .credits-text, .contact-text, .stat-label, .contact-item');
-        if (creditsElements[index]) {
-            creditsElements[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            creditsElements[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                creditsElements[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'navigation') {
-        // For navigation items, just highlight them
-        const navItems = document.querySelectorAll('.nav-section-item, .nav-section-title');
-        if (navItems[index]) {
-            navItems[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            navItems[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                navItems[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    } else if (type === 'content') {
-        // Generic content search - find the specific element
-        const allElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, .section-title, .mission-text, .focus-text, .commitment-text, .about-title, .credits-title');
-        if (allElements[index]) {
-            allElements[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add yellow highlight
-            allElements[index].style.backgroundColor = '#ffeb3b';
-            setTimeout(() => {
-                allElements[index].style.backgroundColor = '';
-            }, 3000);
-        }
-    }
-}
 
 // Initialize search when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {

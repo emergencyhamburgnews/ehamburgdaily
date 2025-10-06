@@ -302,6 +302,38 @@ body {
     z-index: 1001;
     display: none;
     backdrop-filter: blur(10px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .search-results {
+        max-height: 60vh;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        margin: 0;
+        left: -10px;
+        right: -10px;
+        width: calc(100% + 20px);
+    }
+    
+    .search-results-category-items {
+        max-height: 180px;
+    }
+    
+    .search-result-item {
+        padding: 14px 16px;
+    }
+    
+    .search-result-title {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+    
+    .search-result-preview {
+        font-size: 12px;
+    }
 }
 
 .search-suggestions {
@@ -524,13 +556,14 @@ mark {
 }
 
 .header-content {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
+    min-width: 0;
 }
 
 
@@ -543,12 +576,15 @@ mark {
 /* Desktop Navigation - New Design */
 .nav-desktop {
     display: flex;
-    gap: 30px;
+    gap: 20px;
     align-items: center;
+    flex-wrap: nowrap;
+    overflow: visible;
 }
 
 .nav-desktop .nav-section {
     position: relative;
+    flex-shrink: 0;
 }
 
 .nav-desktop .nav-section-title {
@@ -563,6 +599,8 @@ mark {
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    min-width: max-content;
 }
 
 .nav-desktop .nav-section-title:hover {
@@ -659,17 +697,10 @@ mark {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     position: relative;
+    white-space: nowrap;
+    min-width: max-content;
 }
 
-.nav-emergency .nav-section-title::before {
-    content: '';
-    position: absolute;
-    top: -12px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ff6b35 0%, #ff6b35 50%, #007bff 50%, #007bff 100%);
-}
 
 .nav-emergency .nav-section-title:hover {
     color: #ff6b35;
@@ -705,15 +736,6 @@ mark {
     position: relative;
 }
 
-.nav-emergency-mobile::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ff6b35 0%, #ff6b35 50%, #007bff 50%, #007bff 100%);
-}
 
 .nav-emergency-mobile .nav-section-title {
     font-weight: 600;
@@ -758,10 +780,11 @@ mark {
 }
 
 .hamburger-menu .menu-icon {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     object-fit: contain;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
 /* Mobile Navigation Menu - Off Canvas Slide Out */
@@ -895,6 +918,19 @@ mark {
 /* Adjust main content when notice banner is visible */
 .main-content.with-notice {
     padding-top: 140px; /* Account for fixed header + notice banner */
+}
+
+/* Mobile main content padding fix */
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 120px !important; /* More space for mobile header */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .main-content.with-notice {
+        padding-top: 160px !important; /* More space when notice is visible */
+    }
 }
 
 .container {
@@ -1067,18 +1103,26 @@ mark {
     .posts-grid {
         grid-template-columns: 1fr;
         gap: 15px;
+        padding: 0 1rem;
     }
     
     .posts-container {
         padding: 15px;
+        margin-top: 2rem;
     }
     
     .post-item {
         padding: 15px;
+        margin-bottom: 1rem;
     }
     
     .post-title {
         font-size: 16px;
+        padding: 12px 16px;
+    }
+    
+    .post-date {
+        padding: 0 16px 12px 16px;
     }
 }
 
@@ -1652,38 +1696,49 @@ mark {
 /* Responsive Navigation Bar */
 @media (max-width: 768px) {
     .header {
-        padding: 6px 0;
+        padding: 8px 0;
     }
     
     /* Mobile header grid layout enforced */
     .header-content {
-        padding: 0 8px !important;
+        padding: 0 12px !important;
         display: grid !important;
-        grid-template-columns: auto 1fr auto !important;
+        grid-template-columns: auto 1fr 48px !important;
         grid-template-areas: "logo search menu" !important;
-        gap: 10px !important;
+        gap: 8px !important;
         align-items: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .logo {
         grid-area: logo !important;
+        min-width: 0 !important;
     }
     
     .search-container {
         grid-area: search !important;
-        justify-self: start !important;
-        min-width: 180px !important;
+        justify-self: stretch !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
     }
     
     .hamburger-menu {
         grid-area: menu !important;
-        justify-self: end !important;
+        justify-self: center !important;
         display: flex !important;
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        flex-shrink: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     
     .main-logo {
-        height: 35px;
-        max-width: 120px;
+        height: 32px;
+        max-width: 100px;
+        flex-shrink: 0;
     }
     
     /* Hide desktop navigation on mobile */
@@ -1719,11 +1774,15 @@ mark {
     
     .search-input-wrapper {
         border-radius: 18px;
+        min-width: 0;
+        width: 100%;
     }
     
     .search-input {
         padding: 8px 30px 8px 30px;
         font-size: 16px;
+        min-width: 0;
+        width: 100%;
     }
     
     .search-icon {
@@ -1812,12 +1871,42 @@ mark {
 
 @media (max-width: 480px) {
     .header {
-        padding: 15px 0;
+        padding: 6px 0;
+    }
+    
+    .header-content {
+        padding: 0 8px !important;
+        gap: 6px !important;
+        grid-template-columns: auto 1fr 40px !important;
     }
     
     .main-logo {
-        height: 55px;
-        max-width: 180px;
+        height: 28px;
+        max-width: 80px;
+    }
+    
+    .hamburger-menu {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+    }
+    
+    .hamburger-menu .menu-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .search-input {
+        padding: 6px 26px 6px 26px;
+        font-size: 16px;
+    }
+    
+    .search-icon {
+        left: 8px;
+    }
+    
+    .search-clear {
+        right: 8px;
     }
     
     .article-image-container {
@@ -1838,6 +1927,325 @@ mark {
     
     .article-info .description {
         font-size: 12px;
+    }
+}
+
+/* Emergency Hamburg Page Styles */
+.emergency-hamburg-main {
+    min-height: calc(100vh - 80px);
+    padding: 2rem 0;
+}
+
+.emergency-hamburg-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.emergency-hamburg-hero {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.emergency-hamburg-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.emergency-hamburg-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+/* Image Slideshow Styles */
+.image-slideshow {
+    margin: 3rem 0;
+}
+
+.slideshow-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.slide {
+    display: none;
+    position: relative;
+}
+
+.slide.active {
+    display: block;
+}
+
+.slide img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+}
+
+.slide-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: none;
+    z-index: 10;
+}
+
+.slide-nav:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%);
+}
+
+.slide-nav.prev {
+    left: 20px;
+}
+
+.slide-nav.next {
+    right: 20px;
+}
+
+.slide-dots {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    margin: 0 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 0;
+    display: inline-block;
+    cursor: pointer;
+    transition: none;
+}
+
+.dot.active {
+    background-color: #ff6b35;
+    transform: none;
+}
+
+.dot:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    transform: none;
+}
+
+/* Game Description Section */
+.game-description-section {
+    background: #f8f9fa;
+    padding: 4rem 2rem;
+    border-radius: 0;
+    margin: 3rem 0;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.game-description {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: #555;
+    max-width: 800px;
+    margin: 0 auto 3rem;
+}
+
+/* Play Button */
+.play-button-container {
+    margin: 3rem 0;
+}
+
+.play-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #ff6b35, #e55a2b);
+    color: white;
+    padding: 18px 36px;
+    border-radius: 0;
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: none;
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+}
+
+.play-button:hover {
+    transform: none;
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    background: linear-gradient(135deg, #e55a2b, #d64929);
+}
+
+.play-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Roles Section */
+.roles-section {
+    margin: 4rem 0;
+    text-align: center;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.role-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: none;
+    border-left: 4px solid #ff6b35;
+}
+
+.role-card:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.role-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.role-description {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .emergency-hamburg-title {
+        font-size: 2rem;
+    }
+    
+    .emergency-hamburg-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .slide img {
+        height: 250px;
+    }
+    
+    .slide-nav {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .slide-nav.prev {
+        left: 10px;
+    }
+    
+    .slide-nav.next {
+        right: 10px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .game-description {
+        font-size: 1.1rem;
+    }
+    
+    .play-button {
+        padding: 14px 28px;
+        font-size: 1.1rem;
+    }
+    
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .role-card {
+        padding: 1rem;
+    }
+    
+    .role-title {
+        font-size: 1.2rem;
+    }
+    
+    .role-description {
+        font-size: 0.9rem;
+    }
+    
+    .game-description-section {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .emergency-hamburg-title {
+        font-size: 1.5rem;
+    }
+    
+    .slide img {
+        height: 200px;
+    }
+    
+    .play-button {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+    
+    .roles-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+    }
+    
+    .role-card {
+        padding: 0.8rem;
+    }
+    
+    .role-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .role-description {
+        font-size: 0.8rem;
     }
 }
 
