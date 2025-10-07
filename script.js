@@ -161,10 +161,21 @@ function createNewsItem(article) {
     }
 
     newsItem.innerHTML = `
-        <div class="news-item-image" onclick="openArticle('${article.id}')">
+        <div class="news-item-image" 
+             onclick="openArticle('${article.id}')" 
+             oncontextmenu="openArticle('${article.id}', event)"
+             ontouchstart="handleTouchStart(event, '${article.id}')"
+             ontouchend="handleTouchEnd(event, '${article.id}')">
             ${mediaContent}
+            <div class="share-overlay" style="display: none;">
+                <div class="share-message">Hold to copy link</div>
+            </div>
         </div>
-        <div class="news-item-info" onclick="openArticle('${article.id}')">
+        <div class="news-item-info" 
+             onclick="openArticle('${article.id}')" 
+             oncontextmenu="openArticle('${article.id}', event)"
+             ontouchstart="handleTouchStart(event, '${article.id}')"
+             ontouchend="handleTouchEnd(event, '${article.id}')">
             <div class="news-item-header">
                 <div class="news-item-date">${date.toLocaleDateString('en-US', { 
                     year: 'numeric', 
@@ -180,17 +191,18 @@ function createNewsItem(article) {
     return newsItem;
 }
 
-// Function to open article (you can customize this)
-function openArticle(articleId) {
-    console.log('Opening article:', articleId);
-    // For now, just scroll to top and show a message
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// Function to open article
+function openArticle(articleId, event = null) {
+    // If it's a right-click or long press, copy link instead
+    if (event && (event.type === 'contextmenu' || event.type === 'touchend')) {
+        event.preventDefault();
+        copyArticleLink(articleId);
+        return;
+    }
     
-    // You can customize this to:
-    // 1. Open a modal with full article
-    // 2. Navigate to a separate article page
-    // 3. Show more details
-    // 4. Or just scroll to top (current behavior)
+    console.log('Opening article:', articleId);
+    // Navigate to individual article page
+    window.location.href = `article.html?id=${articleId}`;
 }
 
 // Load social media settings from Firebase
@@ -1008,6 +1020,116 @@ function forceShowBanner(message = 'Test message from console') {
     }
 }
 
+// Touch handling for long-press functionality
+let touchStartTime = 0;
+let longPressTimer = null;
+let isLongPress = false;
+
+function handleTouchStart(event, articleId) {
+    touchStartTime = Date.now();
+    isLongPress = false;
+    
+    // Set a timer for long press (800ms)
+    longPressTimer = setTimeout(() => {
+        isLongPress = true;
+        copyArticleLink(articleId);
+        
+        // Show visual feedback
+        const shareOverlay = event.currentTarget.querySelector('.share-overlay');
+        if (shareOverlay) {
+            shareOverlay.style.display = 'flex';
+            setTimeout(() => {
+                shareOverlay.style.display = 'none';
+            }, 2000);
+        }
+    }, 800);
+}
+
+function handleTouchEnd(event, articleId) {
+    const touchEndTime = Date.now();
+    const touchDuration = touchEndTime - touchStartTime;
+    
+    // Clear the long press timer
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+    }
+    
+    // If it was a long press, don't open the article
+    if (isLongPress) {
+        event.preventDefault();
+        return;
+    }
+    
+    // If it was a short tap, open the article
+    if (touchDuration < 800) {
+        openArticle(articleId);
+    }
+}
+
+// Copy article link to clipboard
+async function copyArticleLink(articleId) {
+    const articleUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}article.html?id=${articleId}`;
+    
+    try {
+        await navigator.clipboard.writeText(articleUrl);
+        showShareNotification('Article link copied to clipboard!');
+    } catch (error) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = articleUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showShareNotification('Article link copied to clipboard!');
+    }
+    
+    console.log('Article link copied:', articleUrl);
+}
+
+// Show share notification
+function showShareNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     loadAllNews();
@@ -1031,6 +1153,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.loadMessageBanner = loadMessageBanner;
     window.testFirebaseConnection = testFirebaseConnection;
     window.forceShowBanner = forceShowBanner;
+    window.copyArticleLink = copyArticleLink;
+    window.handleTouchStart = handleTouchStart;
+    window.handleTouchEnd = handleTouchEnd;
 });
 
 // Handle window resize for responsive behavior - handled in DOMContentLoaded

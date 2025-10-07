@@ -29,8 +29,17 @@ function initializeAuth() {
     if (auth && auth.onAuthStateChanged) {
         auth.onAuthStateChanged((user) => {
             currentUser = user;
+            if (user) {
+                console.log('👤 User signed in:', {
+                    name: user.displayName,
+                    email: user.email,
+                    uid: user.uid,
+                    photoURL: user.photoURL
+                });
+            } else {
+                console.log('🚪 User signed out');
+            }
             updateAuthUI(user);
-            console.log('Auth state changed:', user ? 'User signed in' : 'User signed out');
         });
     } else {
         console.error('Firebase Auth onAuthStateChanged not available');
@@ -42,11 +51,12 @@ function initializeAuth() {
 
 // Update UI based on authentication state
 function updateAuthUI(user) {
-    const loginButtons = document.querySelectorAll('.auth-login-btn');
-    const userProfiles = document.querySelectorAll('.auth-user-profile');
-    const userAvatars = document.querySelectorAll('.auth-user-avatar');
-    const userNames = document.querySelectorAll('.auth-user-name');
-    const userEmails = document.querySelectorAll('.auth-user-email');
+    // Only target mobile elements and settings page - ignore desktop profile
+    const mobileLoginButtons = document.querySelectorAll('.auth-login-btn-mobile');
+    const mobileUserProfiles = document.querySelectorAll('.auth-user-profile-mobile');
+    const mobileUserAvatars = document.querySelectorAll('.mobile-user-compact .auth-user-avatar');
+    const mobileUserNames = document.querySelectorAll('.mobile-user-info .auth-user-name');
+    const mobileUserEmails = document.querySelectorAll('.mobile-user-info .auth-user-email');
     
     // Settings page specific elements
     const authSignedOut = document.getElementById('auth-signed-out');
@@ -56,16 +66,34 @@ function updateAuthUI(user) {
     const profileAvatar = document.getElementById('profile-avatar');
     
     console.log('🔄 Updating auth UI, user:', user ? 'signed in' : 'signed out');
-    console.log('📊 Found', loginButtons.length, 'login buttons and', userProfiles.length, 'user profiles');
+    console.log('📊 Found', mobileLoginButtons.length, 'mobile login buttons and', mobileUserProfiles.length, 'mobile user profiles');
+    console.log('📊 Mobile elements found:');
+    console.log('  - Avatars:', mobileUserAvatars.length);
+    console.log('  - Names:', mobileUserNames.length);
+    console.log('  - Emails:', mobileUserEmails.length);
+    
+    // Debug: log the actual elements found
+    mobileUserAvatars.forEach((el, i) => console.log(`  Avatar ${i}:`, el));
+    mobileUserNames.forEach((el, i) => console.log(`  Name ${i}:`, el));
+    mobileUserEmails.forEach((el, i) => console.log(`  Email ${i}:`, el));
+    
+    // Test broader selectors
+    const testAvatars = document.querySelectorAll('.auth-user-avatar');
+    const testNames = document.querySelectorAll('.auth-user-name');
+    const testEmails = document.querySelectorAll('.auth-user-email');
+    console.log('🔭 Broader search results:');
+    console.log('  - All avatars:', testAvatars.length);
+    console.log('  - All names:', testNames.length);
+    console.log('  - All emails:', testEmails.length);
     
     if (user) {
-        // User is signed in
-        loginButtons.forEach(btn => {
+        // User is signed in - update mobile profile only
+        mobileLoginButtons.forEach(btn => {
             btn.style.display = 'none';
         });
         
-        userProfiles.forEach(profile => {
-            profile.style.display = 'flex';
+        mobileUserProfiles.forEach(profile => {
+            profile.style.display = 'block';
         });
         
         // Update user info
@@ -73,7 +101,8 @@ function updateAuthUI(user) {
         const email = user.email || '';
         const photoURL = user.photoURL || generateAvatarURL(displayName);
         
-        userAvatars.forEach(avatar => {
+        mobileUserAvatars.forEach((avatar, i) => {
+            console.log(`🔄 Updating avatar ${i} with:`, photoURL);
             if (avatar.tagName === 'IMG') {
                 avatar.src = photoURL;
                 avatar.alt = displayName;
@@ -82,11 +111,13 @@ function updateAuthUI(user) {
             }
         });
         
-        userNames.forEach(name => {
+        mobileUserNames.forEach((name, i) => {
+            console.log(`🔄 Updating name ${i} with:`, displayName);
             name.textContent = displayName;
         });
         
-        userEmails.forEach(emailEl => {
+        mobileUserEmails.forEach((emailEl, i) => {
+            console.log(`🔄 Updating email ${i} with:`, email);
             emailEl.textContent = email;
         });
         
@@ -98,19 +129,12 @@ function updateAuthUI(user) {
         if (profileAvatar) profileAvatar.src = photoURL;
         
     } else {
-        // User is signed out
-        loginButtons.forEach(btn => {
-            // Show login buttons with correct display style
-            if (btn.classList.contains('auth-login-btn-desktop')) {
-                btn.style.display = 'flex';
-            } else if (btn.classList.contains('auth-login-btn-mobile')) {
-                btn.style.display = 'flex';
-            } else {
-                btn.style.display = 'block';
-            }
+        // User is signed out - show mobile login button only
+        mobileLoginButtons.forEach(btn => {
+            btn.style.display = 'flex';
         });
         
-        userProfiles.forEach(profile => {
+        mobileUserProfiles.forEach(profile => {
             profile.style.display = 'none';
         });
         
@@ -245,7 +269,26 @@ async function signUpWithEmail(email, password, displayName) {
         return;
     }
     
+    console.log('🚀 Starting account creation for:', email);
+    
+    // Validate name first
+    const nameValidation = validateName(displayName);
+    if (!nameValidation.valid) {
+        showMessage('error', nameValidation.message);
+        return;
+    }
+    
     try {
+        showLoadingState('Checking email availability...');
+        
+        // Check if email already exists
+        const emailExists = await checkEmailExists(email);
+        if (emailExists) {
+            showMessage('error', 'An account with this email already exists. Please sign in instead.');
+            hideLoadingState();
+            return;
+        }
+        
         showLoadingState('Creating account...');
         
         // Import Firebase auth functions dynamically
@@ -377,23 +420,17 @@ function isSignedIn() {
 
 // Initialize auth UI immediately (before Firebase loads)
 function initializeAuthUIImmediate() {
-    // Show login buttons immediately
-    const loginButtons = document.querySelectorAll('.auth-login-btn');
-    const userProfiles = document.querySelectorAll('.auth-user-profile');
+    // Show mobile login buttons only - desktop profile is completely hidden
+    const mobileLoginButtons = document.querySelectorAll('.auth-login-btn-mobile');
+    const mobileUserProfiles = document.querySelectorAll('.auth-user-profile-mobile');
     
-    console.log('⚡ Immediate auth UI init - showing login buttons');
+    console.log('⚡ Immediate auth UI init - showing mobile login buttons only');
     
-    loginButtons.forEach(btn => {
-        if (btn.classList.contains('auth-login-btn-desktop')) {
-            btn.style.display = 'flex';
-        } else if (btn.classList.contains('auth-login-btn-mobile')) {
-            btn.style.display = 'flex';
-        } else {
-            btn.style.display = 'block';
-        }
+    mobileLoginButtons.forEach(btn => {
+        btn.style.display = 'flex';
     });
     
-    userProfiles.forEach(profile => {
+    mobileUserProfiles.forEach(profile => {
         profile.style.display = 'none';
     });
 }
@@ -414,6 +451,17 @@ document.addEventListener('DOMContentLoaded', () => {
     checkFirebase();
 });
 
+// Manual test function for debugging
+function testMobileProfileUpdate() {
+    console.log('🧪 Testing mobile profile update manually...');
+    const testUser = {
+        displayName: 'Test User',
+        email: 'test@example.com',
+        photoURL: null
+    };
+    updateAuthUI(testUser);
+}
+
 // Export functions for global use
 window.authSystem = {
     showLoginModal,
@@ -424,7 +472,85 @@ window.authSystem = {
     signOutUser,
     getCurrentUser,
     isSignedIn,
-    showMessage
+    showMessage,
+    testMobileProfileUpdate  // Add test function
 };
 
 console.log('🔐 Auth system loaded');
+
+// ========================================
+// VALIDATION FUNCTIONS
+// ========================================
+
+// Validate user name according to rules
+function validateName(name) {
+    // List of inappropriate words (expand as needed)
+    const inappropriateWords = [
+        'admin', 'administrator', 'mod', 'moderator', 'fuck', 'shit', 'ass', 'damn', 'hell',
+        'bitch', 'bastard', 'crap', 'piss', 'sex', 'porn', 'nude', 'naked', 'dick', 'cock',
+        'pussy', 'vagina', 'penis', 'boob', 'breast', 'nazi', 'hitler', 'terrorist', 'kill',
+        'murder', 'death', 'suicide', 'drug', 'cocaine', 'heroin', 'weed', 'marijuana',
+        'spam', 'scam', 'hack', 'cheat', 'bot', 'fake', 'test', 'null', 'undefined'
+    ];
+    
+    if (!name || name.trim().length === 0) {
+        return { valid: false, message: 'Name is required' };
+    }
+    
+    const trimmedName = name.trim();
+    
+    // Check for numbers
+    if (/\d/.test(trimmedName)) {
+        return { valid: false, message: 'Name cannot contain numbers' };
+    }
+    
+    // Check for special characters (allow only letters, spaces, hyphens, apostrophes)
+    if (!/^[a-zA-Z\s\-']+$/.test(trimmedName)) {
+        return { valid: false, message: 'Name can only contain letters, spaces, hyphens, and apostrophes' };
+    }
+    
+    // Split name into words
+    const words = trimmedName.split(/\s+/).filter(word => word.length > 0);
+    
+    // Check for maximum 2 names
+    if (words.length > 2) {
+        return { valid: false, message: 'Please enter maximum 2 names (e.g., "John Smith")' };
+    }
+    
+    // Check for minimum 1 name
+    if (words.length === 0) {
+        return { valid: false, message: 'Please enter at least one name' };
+    }
+    
+    // Check each word for inappropriate content
+    for (let word of words) {
+        const lowerWord = word.toLowerCase();
+        for (let inappropriate of inappropriateWords) {
+            if (lowerWord.includes(inappropriate)) {
+                return { valid: false, message: 'Please use an appropriate name' };
+            }
+        }
+        
+        // Check minimum word length
+        if (word.length < 2) {
+            return { valid: false, message: 'Each name must be at least 2 characters long' };
+        }
+    }
+    
+    return { valid: true, message: '' };
+}
+
+// Check if email is already in use
+async function checkEmailExists(email) {
+    try {
+        // Import Firebase auth functions
+        const { fetchSignInMethodsForEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        return signInMethods.length > 0;
+    } catch (error) {
+        console.error('Error checking email:', error);
+        // If there's an error checking, assume email doesn't exist to allow signup attempt
+        return false;
+    }
+}
