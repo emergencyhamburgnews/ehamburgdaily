@@ -1,0 +1,170 @@
+/* Loading Enhancement Styles */
+
+/* Global loading state */
+body.loading {
+    cursor: wait;
+}
+
+body.loading * {
+    pointer-events: none;
+}
+
+/* Allow loading spinner to remain interactive */
+body.loading #loading-spinner {
+    pointer-events: all;
+}
+
+/* Enhanced loading spinner animation */
+#loading-spinner {
+    transition: opacity 0.3s ease;
+}
+
+#loading-spinner.fade-in {
+    opacity: 0;
+    animation: fadeInSpinner 0.3s ease forwards;
+}
+
+#loading-spinner.fade-out {
+    animation: fadeOutSpinner 0.3s ease forwards;
+}
+
+@keyframes fadeInSpinner {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOutSpinner {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.8); }
+}
+
+/* Loading overlay for specific sections */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.loading-overlay .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ff6b35;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Section loading states */
+.news-grid.loading,
+.posts-grid.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.news-grid.loading::after,
+.posts-grid.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* Skeleton loading for news items */
+.news-item.skeleton {
+    animation: skeleton-loading 1.5s ease-in-out infinite alternate;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 2s infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes skeleton-loading {
+    0% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Improve notification styles */
+.error-notification {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.success-notification {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Loading dots animation for text */
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Responsive loading improvements */
+@media (max-width: 768px) {
+    .loading-overlay .spinner {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .error-notification,
+    .success-notification {
+        max-width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+        right: auto;
+    }
+}
+
+/* Dark mode loading support */
+@media (prefers-color-scheme: dark) {
+    .loading-overlay {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .loading-overlay .spinner {
+        border: 3px solid #333;
+        border-top: 3px solid #ff6b35;
+    }
+    
+    .news-item.skeleton {
+        background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+        background-size: 200% 100%;
+    }
+}

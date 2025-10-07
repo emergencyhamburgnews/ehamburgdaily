@@ -4,6 +4,125 @@ const newsGrid = document.getElementById('news-grid');
 const gameUpdateTitle = document.getElementById('game-update-title');
 const gameUpdateInfo = document.getElementById('game-update-info');
 
+// Firebase helper functions and error handling
+const FIREBASE_TIMEOUT = 15000; // 15 seconds timeout
+const MAX_RETRIES = 3;
+
+// Check if Firebase is properly initialized
+function isFirebaseInitialized() {
+    try {
+        return (
+            typeof window !== 'undefined' &&
+            typeof window.db !== 'undefined' &&
+            window.db !== null &&
+            typeof collection !== 'undefined' &&
+            typeof getDocs !== 'undefined' &&
+            typeof query !== 'undefined' &&
+            typeof orderBy !== 'undefined'
+        );
+    } catch (error) {
+        console.error('Error checking Firebase initialization:', error);
+        return false;
+    }
+}
+
+// Create a promise with timeout
+function withTimeout(promise, timeoutMs = FIREBASE_TIMEOUT, operation = 'Firebase operation') {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error(`${operation} timed out after ${timeoutMs}ms`));
+            }, timeoutMs);
+        })
+    ]);
+}
+
+// Retry mechanism for Firebase operations
+async function withRetry(operation, maxRetries = MAX_RETRIES, delay = 1000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await operation();
+        } catch (error) {
+            console.warn(`Attempt ${attempt} failed:`, error.message);
+            
+            if (attempt === maxRetries) {
+                throw error;
+            }
+            
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, delay * attempt));
+        }
+    }
+}
+
+// Enhanced logging function
+function logOperation(operation, status, data = null, error = null) {
+    const timestamp = new Date().toISOString();
+    const logData = {
+        timestamp,
+        operation,
+        status,
+        ...(data && { data }),
+        ...(error && { error: error.message })
+    };
+    
+    if (status === 'error') {
+        console.error(`[${timestamp}] ${operation} FAILED:`, logData);
+    } else {
+        console.log(`[${timestamp}] ${operation} ${status.toUpperCase()}:`, logData);
+    }
+}
+
+// Show user-friendly error message
+function showUserError(message, details = null) {
+    console.error('User Error:', message, details);
+    
+    // Create a user-friendly notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f44336;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 300px;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+    `;
+    notification.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 4px;">⚠️ Error</div>
+        <div>${message}</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 5000);
+}
+
 // Removed old featured article function - using single news system now
 
 // Removed old loadLatestNews function - using loadAllNews now
@@ -317,18 +436,99 @@ function displayPlaceholderNews() {
     displayNewsGrid(placeholderNews);
 }
 
-function showLoading() {
-    loadingSpinner.style.display = 'block';
+// Enhanced loading state management
+let loadingOperations = new Set();
+let loadingTimeout = null;
+
+// Show loading with operation tracking
+function showLoading(operationId = 'default') {
+    if (loadingSpinner) {
+        loadingOperations.add(operationId);
+        loadingSpinner.style.display = 'block';
+        
+        // Add loading class to body for global loading styles
+        document.body.classList.add('loading');
+        
+        logOperation('loadingManager', 'show_loading', {
+            operationId,
+            activeOperations: Array.from(loadingOperations)
+        });
+        
+        // Set a maximum loading timeout (30 seconds)
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+        }
+        
+        loadingTimeout = setTimeout(() => {
+            logOperation('loadingManager', 'loading_timeout_reached');
+            showUserError('Loading is taking longer than expected. Please refresh the page.');
+            hideLoading('timeout');
+        }, 30000);
+    }
 }
 
-function hideLoading() {
-    loadingSpinner.style.display = 'none';
+// Hide loading with operation tracking
+function hideLoading(operationId = 'default') {
+    if (operationId === 'timeout') {
+        // Force hide loading on timeout
+        loadingOperations.clear();
+    } else {
+        loadingOperations.delete(operationId);
+    }
+    
+    // Only hide loading spinner if no operations are running
+    if (loadingOperations.size === 0) {
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
+        
+        // Remove loading class from body
+        document.body.classList.remove('loading');
+        
+        // Clear timeout
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            loadingTimeout = null;
+        }
+        
+        logOperation('loadingManager', 'hide_loading', {
+            operationId,
+            remainingOperations: Array.from(loadingOperations)
+        });
+    } else {
+        logOperation('loadingManager', 'keep_loading', {
+            operationId,
+            remainingOperations: Array.from(loadingOperations)
+        });
+    }
 }
 
+// Force hide loading (emergency use)
+function forceHideLoading() {
+    loadingOperations.clear();
+    if (loadingSpinner) {
+        loadingSpinner.style.display = 'none';
+    }
+    document.body.classList.remove('loading');
+    
+    if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+    }
+    
+    logOperation('loadingManager', 'force_hide_loading');
+}
+
+// Check if loading is currently active
+function isLoading() {
+    return loadingOperations.size > 0;
+}
+
+// Legacy error function - kept for compatibility
 function showError(message) {
     console.error(message);
-    // You can implement a toast notification or error display here
-    hideLoading();
+    showUserError(message);
+    hideLoading('error');
 }
 
 // Initialize the application
@@ -380,45 +580,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load all news articles
 async function loadAllNews() {
+    const operationId = 'loadAllNews';
+    logOperation('loadAllNews', 'started');
+    
     try {
-        showLoading();
+        showLoading(operationId);
         
-        // Check if Firebase is initialized
-        if (!window.db) {
-            throw new Error('Firebase not initialized');
+        // Check if Firebase is properly initialized
+        if (!isFirebaseInitialized()) {
+            logOperation('loadAllNews', 'firebase_not_initialized');
+            console.log('Firebase not initialized, showing placeholder news');
+            displayPlaceholderNews();
+            return;
         }
         
-        // Query for all articles, ordered by timestamp (newest first)
-        const newsQuery = query(
-            collection(db, 'news'),
-            orderBy('timestamp', 'desc')
+        logOperation('loadAllNews', 'firebase_initialized');
+        
+        // Define the Firebase operation
+        const firebaseOperation = async () => {
+            logOperation('loadAllNews', 'querying_firebase');
+            
+            const newsQuery = query(
+                collection(window.db, 'news'),
+                orderBy('timestamp', 'desc')
+            );
+            
+            return await getDocs(newsQuery);
+        };
+        
+        // Execute with timeout and retry
+        const newsSnapshot = await withTimeout(
+            withRetry(firebaseOperation, MAX_RETRIES, 2000),
+            FIREBASE_TIMEOUT,
+            'Loading news from Firebase'
         );
         
-        const newsSnapshot = await getDocs(newsQuery);
+        logOperation('loadAllNews', 'firebase_query_success', {
+            documentsFound: newsSnapshot.size,
+            isEmpty: newsSnapshot.empty
+        });
         
         if (!newsSnapshot.empty) {
-            const newsData = newsSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const newsData = newsSnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    // Ensure timestamp is properly handled
+                    timestamp: data.timestamp || null
+                };
+            });
             
-            console.log('Loaded news data:', newsData);
+            logOperation('loadAllNews', 'processing_news_data', {
+                articlesCount: newsData.length,
+                firstArticleTitle: newsData[0]?.title || 'N/A'
+            });
+            
+            // Display the news grid
             displayNewsGrid(newsData);
             
             // Update social media meta tags with the latest article
             if (newsData.length > 0) {
-                updateSocialMetaTags(newsData[0]); // First article is the latest
+                try {
+                    updateSocialMetaTags(newsData[0]);
+                    logOperation('loadAllNews', 'social_meta_updated');
+                } catch (metaError) {
+                    logOperation('loadAllNews', 'social_meta_error', null, metaError);
+                    console.warn('Failed to update social meta tags:', metaError);
+                }
             }
+            
+            logOperation('loadAllNews', 'completed_successfully', {
+                articlesLoaded: newsData.length
+            });
         } else {
-            console.log('No news articles found in Firebase');
+            logOperation('loadAllNews', 'no_articles_found');
+            console.log('No news articles found in Firebase, showing placeholder');
             displayPlaceholderNews();
         }
         
-        hideLoading();
     } catch (error) {
-        console.error('Error loading news:', error);
-        showError('Failed to load news. Please refresh the page.');
-        hideLoading();
+        logOperation('loadAllNews', 'error', null, error);
+        
+        if (error.message.includes('timed out')) {
+            showUserError('Loading news is taking longer than expected. Please check your connection and try again.');
+            console.error('News loading timed out:', error);
+        } else if (error.code === 'permission-denied') {
+            showUserError('Unable to access news content. Please try again later.');
+            console.error('Firebase permission denied:', error);
+        } else if (error.code === 'unavailable') {
+            showUserError('News service is temporarily unavailable. Please try again in a few moments.');
+            console.error('Firebase unavailable:', error);
+        } else {
+            showUserError('Failed to load news. Please refresh the page.');
+            console.error('Unexpected error loading news:', error);
+        }
+        
+        // Show placeholder content as fallback
+        try {
+            displayPlaceholderNews();
+        } catch (fallbackError) {
+            logOperation('loadAllNews', 'fallback_error', null, fallbackError);
+            console.error('Even fallback failed:', fallbackError);
+        }
+        
+    } finally {
+        // Always hide loading, regardless of success or failure
+        hideLoading(operationId);
+        logOperation('loadAllNews', 'loading_hidden');
     }
 }
 
@@ -427,27 +696,87 @@ let gameUpdateData = null;
 
 // Load game updates from Firebase
 async function loadGameUpdates() {
+    logOperation('loadGameUpdates', 'started');
+    
     try {
-        console.log('Loading game updates...');
+        // Check if DOM elements exist
+        if (!gameUpdateTitle || !gameUpdateInfo) {
+            logOperation('loadGameUpdates', 'dom_elements_missing');
+            console.warn('Game update DOM elements not found, skipping game updates');
+            return;
+        }
         
-        const gameUpdatesRef = collection(db, 'gameUpdates');
-        const gameUpdatesSnapshot = await getDocs(gameUpdatesRef);
+        // Check if Firebase is properly initialized
+        if (!isFirebaseInitialized()) {
+            logOperation('loadGameUpdates', 'firebase_not_initialized');
+            console.log('Firebase not initialized, showing default game update state');
+            gameUpdateTitle.textContent = 'Game Updates';
+            gameUpdateInfo.textContent = 'Game updates will appear here when available.';
+            return;
+        }
+        
+        logOperation('loadGameUpdates', 'firebase_initialized');
+        
+        // Define the Firebase operation
+        const firebaseOperation = async () => {
+            logOperation('loadGameUpdates', 'querying_firebase');
+            
+            const gameUpdatesRef = collection(window.db, 'gameUpdates');
+            return await getDocs(gameUpdatesRef);
+        };
+        
+        // Execute with timeout and retry
+        const gameUpdatesSnapshot = await withTimeout(
+            withRetry(firebaseOperation, MAX_RETRIES, 1000),
+            FIREBASE_TIMEOUT,
+            'Loading game updates from Firebase'
+        );
+        
+        logOperation('loadGameUpdates', 'firebase_query_success', {
+            documentsFound: gameUpdatesSnapshot.size,
+            isEmpty: gameUpdatesSnapshot.empty
+        });
         
         if (!gameUpdatesSnapshot.empty) {
             gameUpdateData = gameUpdatesSnapshot.docs[0].data();
-            console.log('Game update data:', gameUpdateData);
+            
+            logOperation('loadGameUpdates', 'processing_game_data', {
+                hasTitle: !!gameUpdateData.title,
+                hasInfo: !!gameUpdateData.info,
+                hasMultiLanguage: !!(gameUpdateData.title_en || gameUpdateData.title_de)
+            });
             
             // Set default language to English
             updateGameUpdateDisplay(gameUpdateData, 'en');
+            
+            logOperation('loadGameUpdates', 'completed_successfully');
         } else {
-            console.log('No game updates found');
+            logOperation('loadGameUpdates', 'no_updates_found');
+            console.log('No game updates found in Firebase');
             gameUpdateTitle.textContent = 'No Updates Available';
             gameUpdateInfo.textContent = 'Check back later for game updates.';
         }
+        
     } catch (error) {
-        console.error('Error loading game updates:', error);
-        gameUpdateTitle.textContent = 'Error Loading Updates';
-        gameUpdateInfo.textContent = 'Unable to load game updates. Please try again later.';
+        logOperation('loadGameUpdates', 'error', null, error);
+        
+        if (error.message.includes('timed out')) {
+            console.warn('Game updates loading timed out:', error);
+            gameUpdateTitle.textContent = 'Updates Unavailable';
+            gameUpdateInfo.textContent = 'Connection timeout. Please try refreshing the page.';
+        } else if (error.code === 'permission-denied') {
+            console.warn('Game updates permission denied:', error);
+            gameUpdateTitle.textContent = 'Updates Unavailable';
+            gameUpdateInfo.textContent = 'Unable to access updates at this time.';
+        } else if (error.code === 'unavailable') {
+            console.warn('Game updates service unavailable:', error);
+            gameUpdateTitle.textContent = 'Service Unavailable';
+            gameUpdateInfo.textContent = 'Updates service is temporarily unavailable.';
+        } else {
+            console.error('Unexpected error loading game updates:', error);
+            gameUpdateTitle.textContent = 'Error Loading Updates';
+            gameUpdateInfo.textContent = 'Unable to load game updates. Please try again later.';
+        }
     }
 }
 
@@ -670,40 +999,86 @@ function selectSearchResult(type, index) {
 
 // Load posts from Firebase
 async function loadPosts() {
+    logOperation('loadPosts', 'started');
+    
     try {
-        console.log('Loading posts from Firebase...');
-        
-        // Check if Firebase is available
-        if (typeof db === 'undefined') {
+        // Check if Firebase is properly initialized
+        if (!isFirebaseInitialized()) {
+            logOperation('loadPosts', 'firebase_not_initialized');
             console.log('Firebase not available, showing fallback');
             displayPostsFallback();
             return;
         }
         
-        // Get posts from Firebase
-        const postsRef = collection(db, 'posts');
-        const postsSnapshot = await getDocs(postsRef);
+        logOperation('loadPosts', 'firebase_initialized');
         
-        console.log('Posts found:', postsSnapshot.size);
+        // Define the Firebase operation
+        const firebaseOperation = async () => {
+            logOperation('loadPosts', 'querying_firebase');
+            
+            const postsRef = collection(window.db, 'posts');
+            return await getDocs(postsRef);
+        };
+        
+        // Execute with timeout and retry
+        const postsSnapshot = await withTimeout(
+            withRetry(firebaseOperation, MAX_RETRIES, 1500),
+            FIREBASE_TIMEOUT,
+            'Loading posts from Firebase'
+        );
+        
+        logOperation('loadPosts', 'firebase_query_success', {
+            documentsFound: postsSnapshot.size,
+            isEmpty: postsSnapshot.empty
+        });
         
         if (!postsSnapshot.empty) {
             // Sort posts by timestamp (newest first)
             const posts = postsSnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        // Ensure timestamp is properly handled
+                        timestamp: data.timestamp || null
+                    };
+                })
                 .sort((a, b) => {
                     const dateA = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date(0);
                     const dateB = b.timestamp ? new Date(b.timestamp.seconds * 1000) : new Date(0);
                     return dateB - dateA;
                 });
             
-            console.log('Posts data:', posts);
+            logOperation('loadPosts', 'processing_posts_data', {
+                postsCount: posts.length,
+                firstPostTitle: posts[0]?.title || 'N/A'
+            });
+            
             displayPosts(posts);
+            logOperation('loadPosts', 'completed_successfully', {
+                postsLoaded: posts.length
+            });
         } else {
-            console.log('No posts found in Firebase');
+            logOperation('loadPosts', 'no_posts_found');
+            console.log('No posts found in Firebase, showing fallback');
             displayPostsFallback();
         }
+        
     } catch (error) {
-        console.error('Error loading posts:', error);
+        logOperation('loadPosts', 'error', null, error);
+        
+        if (error.message.includes('timed out')) {
+            console.warn('Posts loading timed out, showing fallback:', error);
+        } else if (error.code === 'permission-denied') {
+            console.warn('Posts permission denied, showing fallback:', error);
+        } else if (error.code === 'unavailable') {
+            console.warn('Posts service unavailable, showing fallback:', error);
+        } else {
+            console.error('Unexpected error loading posts:', error);
+        }
+        
+        // Always show fallback content
         displayPostsFallback();
     }
 }
@@ -880,66 +1255,127 @@ function displayPostsFallback() {
 
 // Load message banner from Firebase
 async function loadMessageBanner() {
+    logOperation('loadMessageBanner', 'started');
+    
     try {
-        console.log('=== LOADING MESSAGE BANNER ===');
-        console.log('Firebase db object:', typeof db);
-        console.log('Collection function:', typeof collection);
-        console.log('GetDocs function:', typeof getDocs);
+        // Check if DOM elements exist
+        const messageBanner = document.getElementById('message-banner');
+        const messageText = document.getElementById('message-text');
+        const header = document.querySelector('.header');
+        const mainContent = document.querySelector('.main-content');
         
-        // Check if Firebase is available
-        if (typeof db === 'undefined') {
-            console.error('Firebase db is undefined!');
-            document.getElementById('message-banner').style.display = 'none';
+        if (!messageBanner) {
+            logOperation('loadMessageBanner', 'dom_elements_missing');
+            console.warn('Message banner DOM element not found, skipping banner');
             return;
         }
         
-        if (typeof collection === 'undefined') {
-            console.error('Firebase collection function is undefined!');
-            document.getElementById('message-banner').style.display = 'none';
+        // Check if Firebase is properly initialized
+        if (!isFirebaseInitialized()) {
+            logOperation('loadMessageBanner', 'firebase_not_initialized');
+            console.log('Firebase not initialized, hiding banner');
+            messageBanner.style.display = 'none';
+            
+            // Ensure classes are removed
+            if (header) header.classList.remove('with-banner');
+            if (mainContent) mainContent.classList.remove('with-banner');
             return;
         }
         
-        console.log('Firebase is available, proceeding...');
+        logOperation('loadMessageBanner', 'firebase_initialized');
         
-        // Get message settings from Firebase
-        const messageRef = collection(db, 'messageSettings');
-        const messageSnapshot = await getDocs(messageRef);
+        // Define the Firebase operation
+        const firebaseOperation = async () => {
+            logOperation('loadMessageBanner', 'querying_firebase');
+            
+            const messageRef = collection(window.db, 'messageSettings');
+            return await getDocs(messageRef);
+        };
+        
+        // Execute with timeout and retry
+        const messageSnapshot = await withTimeout(
+            withRetry(firebaseOperation, MAX_RETRIES, 800),
+            FIREBASE_TIMEOUT,
+            'Loading message banner from Firebase'
+        );
+        
+        logOperation('loadMessageBanner', 'firebase_query_success', {
+            documentsFound: messageSnapshot.size,
+            isEmpty: messageSnapshot.empty
+        });
         
         if (!messageSnapshot.empty) {
             const settings = messageSnapshot.docs[0].data();
-            console.log('Message settings from Firebase:', settings);
-            console.log('Enabled:', settings.enabled);
-            console.log('Message:', settings.message);
+            
+            logOperation('loadMessageBanner', 'processing_settings', {
+                enabled: settings.enabled,
+                hasMessage: !!settings.message,
+                messageLength: settings.message ? settings.message.length : 0
+            });
             
             // Check if message is enabled
             if (settings.enabled) {
-                const messageText = settings.message || 'My message...';
-                console.log('Setting banner text to:', messageText);
+                const messageTextContent = settings.message || 'Message banner enabled';
                 
-                document.getElementById('message-text').textContent = messageText;
-                document.getElementById('message-banner').style.display = 'block';
+                if (messageText) {
+                    messageText.textContent = messageTextContent;
+                }
                 
-                // Add class to header and main content to adjust positioning
-                document.querySelector('.header').classList.add('with-banner');
-                document.querySelector('.main-content').classList.add('with-banner');
+                messageBanner.style.display = 'block';
                 
-                console.log('Message banner displayed with text:', messageText);
+                // Add classes to header and main content to adjust positioning
+                if (header) header.classList.add('with-banner');
+                if (mainContent) mainContent.classList.add('with-banner');
+                
+                logOperation('loadMessageBanner', 'banner_displayed', {
+                    messageText: messageTextContent
+                });
             } else {
-                document.getElementById('message-banner').style.display = 'none';
+                messageBanner.style.display = 'none';
                 
-                // Remove class from header and main content
-                document.querySelector('.header').classList.remove('with-banner');
-                document.querySelector('.main-content').classList.remove('with-banner');
+                // Remove classes from header and main content
+                if (header) header.classList.remove('with-banner');
+                if (mainContent) mainContent.classList.remove('with-banner');
                 
-                console.log('Message banner hidden - disabled');
+                logOperation('loadMessageBanner', 'banner_disabled');
             }
+            
+            logOperation('loadMessageBanner', 'completed_successfully');
         } else {
-            console.log('No message settings found in Firebase');
-            document.getElementById('message-banner').style.display = 'none';
+            logOperation('loadMessageBanner', 'no_settings_found');
+            console.log('No message settings found in Firebase, hiding banner');
+            messageBanner.style.display = 'none';
+            
+            // Ensure classes are removed
+            if (header) header.classList.remove('with-banner');
+            if (mainContent) mainContent.classList.remove('with-banner');
         }
+        
     } catch (error) {
-        console.error('Error loading message banner:', error);
-        document.getElementById('message-banner').style.display = 'none';
+        logOperation('loadMessageBanner', 'error', null, error);
+        
+        // Always hide banner on error
+        const messageBanner = document.getElementById('message-banner');
+        const header = document.querySelector('.header');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (messageBanner) {
+            messageBanner.style.display = 'none';
+        }
+        
+        // Remove classes to prevent layout issues
+        if (header) header.classList.remove('with-banner');
+        if (mainContent) mainContent.classList.remove('with-banner');
+        
+        if (error.message.includes('timed out')) {
+            console.warn('Message banner loading timed out:', error);
+        } else if (error.code === 'permission-denied') {
+            console.warn('Message banner permission denied:', error);
+        } else if (error.code === 'unavailable') {
+            console.warn('Message banner service unavailable:', error);
+        } else {
+            console.error('Unexpected error loading message banner:', error);
+        }
     }
 }
 
@@ -1144,12 +1580,62 @@ function showShareNotification(message) {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
-    loadAllNews();
-    loadGameUpdates();
-    loadSocialMediaSettings();
-    loadPosts();
-    loadMessageBanner();
-    initializeSearch();
+    logOperation('appInitialization', 'started');
+    
+    // Initialize all loading operations concurrently
+    const initializationPromises = [
+        loadAllNews().catch(error => {
+            logOperation('appInitialization', 'loadAllNews_failed', null, error);
+            return null;
+        }),
+        loadGameUpdates().catch(error => {
+            logOperation('appInitialization', 'loadGameUpdates_failed', null, error);
+            return null;
+        }),
+        loadSocialMediaSettings().catch(error => {
+            logOperation('appInitialization', 'loadSocialMediaSettings_failed', null, error);
+            return null;
+        }),
+        loadPosts().catch(error => {
+            logOperation('appInitialization', 'loadPosts_failed', null, error);
+            return null;
+        }),
+        loadMessageBanner().catch(error => {
+            logOperation('appInitialization', 'loadMessageBanner_failed', null, error);
+            return null;
+        })
+    ];
+    
+    // Wait for all operations to complete (or fail)
+    Promise.allSettled(initializationPromises).then(results => {
+        const successful = results.filter(result => result.status === 'fulfilled').length;
+        const failed = results.filter(result => result.status === 'rejected').length;
+        
+        logOperation('appInitialization', 'completed', {
+            successfulOperations: successful,
+            failedOperations: failed,
+            totalOperations: results.length
+        });
+        
+        // Force hide any remaining loading state after initialization
+        setTimeout(() => {
+            if (isLoading()) {
+                logOperation('appInitialization', 'force_hiding_remaining_loading');
+                forceHideLoading();
+            }
+        }, 2000);
+    }).catch(error => {
+        logOperation('appInitialization', 'critical_error', null, error);
+        forceHideLoading();
+        showUserError('Failed to initialize application. Please refresh the page.');
+    });
+    
+    // Initialize search (doesn't require loading)
+    try {
+        initializeSearch();
+    } catch (error) {
+        logOperation('appInitialization', 'search_initialization_failed', null, error);
+    }
     
     // Listen for storage changes (when settings are updated in another tab)
     window.addEventListener('storage', function(e) {
