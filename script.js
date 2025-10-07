@@ -201,8 +201,8 @@ function openArticle(articleId, event = null) {
     }
     
     console.log('Opening article:', articleId);
-    // Navigate to individual article page
-    window.location.href = `article.html?id=${articleId}`;
+    // Navigate to individual article page with clean URL
+    window.location.href = `/article/${articleId}`;
 }
 
 // Load social media settings from Firebase
@@ -1068,7 +1068,9 @@ function handleTouchEnd(event, articleId) {
 
 // Copy article link to clipboard
 async function copyArticleLink(articleId) {
-    const articleUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}article.html?id=${articleId}`;
+    // Generate clean URL without .html extension
+    const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '');
+    const articleUrl = `${baseUrl}/article/${articleId}`;
     
     try {
         await navigator.clipboard.writeText(articleUrl);

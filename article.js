@@ -1,10 +1,23 @@
 // Article page functionality
 let currentArticle = null;
 
-// Get article ID from URL parameters
+// Get article ID from URL parameters or path
 function getArticleIdFromURL() {
+    // First try to get from URL parameters (backward compatibility)
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('id');
+    const paramId = urlParams.get('id');
+    if (paramId) {
+        return paramId;
+    }
+    
+    // Then try to get from clean URL path (/article/articleId)
+    const path = window.location.pathname;
+    const matches = path.match(/\/article\/([^/]+)/);
+    if (matches && matches[1]) {
+        return matches[1];
+    }
+    
+    return null;
 }
 
 // Load article from Firebase
