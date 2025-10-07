@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Article Links - EHAMBURG DAILY</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-link {
+            display: block;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background 0.3s ease;
+        }
+        
+        .test-link:hover {
+            background: #1976D2;
+        }
+        
+        .test-description {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0 15px;
+            text-align: center;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Article Links Test</h1>
+        
+        <div class="test-description">
+            Click these test links to verify article pages work correctly:
+        </div>
+        
+        <!-- Test with URL parameters (reliable method) -->
+        <a href="article.html?id=test-article-1" class="test-link">
+            Test Article #1 (URL Parameters)
+        </a>
+        <div class="test-description">Uses: article.html?id=test-article-1</div>
+        
+        <a href="article.html?id=test-article-2" class="test-link">
+            Test Article #2 (URL Parameters)
+        </a>
+        <div class="test-description">Uses: article.html?id=test-article-2</div>
+        
+        <!-- Test with clean URLs (if server supports it) -->
+        <a href="article/test-article-3" class="test-link">
+            Test Article #3 (Clean URL)
+        </a>
+        <div class="test-description">Uses: article/test-article-3</div>
+        
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+        
+        <script>
+            // Test function to simulate news item clicks
+            function testArticleNavigation(articleId) {
+                console.log('Testing article navigation for:', articleId);
+                const url = `article.html?id=${articleId}`;
+                console.log('Generated URL:', url);
+                window.location.href = url;
+            }
+            
+            // Test function to simulate link copying
+            async function testLinkCopying(articleId) {
+                console.log('Testing link copying for:', articleId);
+                const baseUrl = window.location.origin + window.location.pathname.replace('test-article-links.html', '');
+                const articleUrl = `${baseUrl}article.html?id=${articleId}`;
+                
+                try {
+                    await navigator.clipboard.writeText(articleUrl);
+                    alert('Test link copied: ' + articleUrl);
+                } catch (error) {
+                    console.log('Fallback copy method');
+                    prompt('Copy this test link:', articleUrl);
+                }
+            }
+            
+            // Make functions available in console for testing
+            window.testArticleNavigation = testArticleNavigation;
+            window.testLinkCopying = testLinkCopying;
+            
+            console.log('🧪 Test functions loaded:');
+            console.log('- testArticleNavigation("your-article-id")');
+            console.log('- testLinkCopying("your-article-id")');
+        </script>
+    </div>
+</body>
+</html>

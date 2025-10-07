@@ -3,28 +3,49 @@ let currentArticle = null;
 
 // Get article ID from URL parameters or path
 function getArticleIdFromURL() {
-    // First try to get from URL parameters (backward compatibility)
+    // First try to get from URL parameters (most reliable)
     const urlParams = new URLSearchParams(window.location.search);
     const paramId = urlParams.get('id');
     if (paramId) {
+        console.log('Article ID from URL params:', paramId);
         return paramId;
     }
     
     // Then try to get from clean URL path (/article/articleId)
     const path = window.location.pathname;
-    const matches = path.match(/\/article\/([^/]+)/);
+    console.log('Current path:', path);
+    
+    // Handle various clean URL formats
+    const matches = path.match(/\/article\/([^/\?]+)/);
     if (matches && matches[1]) {
+        console.log('Article ID from path:', matches[1]);
         return matches[1];
     }
     
+    // Also check if we're directly on article.html
+    if (path.includes('article.html') || path.includes('article')) {
+        // Try to extract from hash or other sources
+        const hashMatch = window.location.hash.match(/#id=([^&]+)/);
+        if (hashMatch && hashMatch[1]) {
+            console.log('Article ID from hash:', hashMatch[1]);
+            return hashMatch[1];
+        }
+    }
+    
+    console.log('No article ID found in URL');
     return null;
 }
 
 // Load article from Firebase
 async function loadArticle() {
+    console.log('🔍 Loading article...');
+    console.log('Current URL:', window.location.href);
+    
     const articleId = getArticleIdFromURL();
+    console.log('Extracted article ID:', articleId);
     
     if (!articleId) {
+        console.error('❌ No article ID found in URL');
         showError();
         return;
     }
@@ -32,22 +53,26 @@ async function loadArticle() {
     try {
         // Wait for Firebase to be ready
         if (!window.db) {
+            console.log('⏳ Waiting for Firebase...');
             setTimeout(loadArticle, 100);
             return;
         }
         
+        console.log('🔥 Firebase ready, fetching article:', articleId);
         const articleRef = doc(db, 'news', articleId);
         const articleSnap = await getDoc(articleRef);
         
         if (articleSnap.exists()) {
             currentArticle = { id: articleSnap.id, ...articleSnap.data() };
+            console.log('✅ Article loaded:', currentArticle.title);
             displayArticle(currentArticle);
             updateMetaTags(currentArticle);
         } else {
+            console.error('❌ Article not found in Firebase:', articleId);
             showError();
         }
     } catch (error) {
-        console.error('Error loading article:', error);
+        console.error('❌ Error loading article:', error);
         showError();
     }
 }

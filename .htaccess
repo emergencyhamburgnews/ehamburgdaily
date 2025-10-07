@@ -1,17 +1,13 @@
 # Enable URL rewriting
 RewriteEngine On
 
-# Remove .html extension from URLs
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $1.html [NC,L]
-
-# Redirect .html URLs to clean URLs (for SEO)
-RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
-RewriteRule ^ /%1? [NC,L,R=301]
-
-# Handle article URLs without .html
+# Handle article URLs with clean format (optional - for sharing)
 RewriteRule ^article/([^/]+)/?$ article.html?id=$1 [NC,L,QSA]
+
+# Optional: Remove .html from shared URLs (only if server supports it)
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule ^([^\.]+)$ $1.html [NC,L]
 
 # Custom error pages (optional)
 ErrorDocument 404 /404.html

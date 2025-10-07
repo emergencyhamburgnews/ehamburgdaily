@@ -201,8 +201,8 @@ function openArticle(articleId, event = null) {
     }
     
     console.log('Opening article:', articleId);
-    // Navigate to individual article page with clean URL
-    window.location.href = `/article/${articleId}`;
+    // Navigate to individual article page
+    window.location.href = `article.html?id=${articleId}`;
 }
 
 // Load social media settings from Firebase
@@ -1068,9 +1068,19 @@ function handleTouchEnd(event, articleId) {
 
 // Copy article link to clipboard
 async function copyArticleLink(articleId) {
-    // Generate clean URL without .html extension
+    // Generate URL based on environment
+    let articleUrl;
+    const currentUrl = window.location.href;
     const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '');
-    const articleUrl = `${baseUrl}/article/${articleId}`;
+    
+    // Check if we're in a production environment with clean URLs enabled
+    if (currentUrl.includes('.html') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Local development or .html-based URLs
+        articleUrl = `${baseUrl}/article.html?id=${articleId}`;
+    } else {
+        // Production with clean URLs
+        articleUrl = `${baseUrl}/article/${articleId}`;
+    }
     
     try {
         await navigator.clipboard.writeText(articleUrl);
