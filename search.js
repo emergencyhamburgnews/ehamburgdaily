@@ -286,57 +286,71 @@ function scrollToSearchElement(elementId) {
     const searchResults = document.getElementById('search-results');
     const searchInput = document.getElementById('search-input');
     
-    // Hide search results
-    if (searchResults) searchResults.style.display = 'none';
-    if (searchInput) searchInput.value = '';
-    
-    // Check if cache exists
-    if (!window.searchElementsCache || !Array.isArray(window.searchElementsCache)) {
-        console.error('❌ Search elements cache not found or invalid');
-        return;
+    try {
+        // Check if cache exists
+        if (!window.searchElementsCache || !Array.isArray(window.searchElementsCache)) {
+            console.error('❌ Search elements cache not found or invalid');
+            return;
+        }
+        
+        console.log('📋 Cache contains', window.searchElementsCache.length, 'elements');
+        
+        // Find the element in cache
+        const cachedItem = window.searchElementsCache.find(item => item.id === elementId);
+        
+        if (!cachedItem) {
+            console.error('❌ Element not found in cache. ID:', elementId);
+            console.log('Available cache IDs:', window.searchElementsCache.map(item => item.id));
+            return;
+        }
+        
+        if (!cachedItem.element) {
+            console.error('❌ Cached item has no element:', cachedItem);
+            return;
+        }
+        
+        console.log('✅ Found cached element:', cachedItem);
+        
+        // Check if element is still in DOM
+        if (!document.body.contains(cachedItem.element)) {
+            console.error('❌ Element is no longer in DOM:', cachedItem.element);
+            return;
+        }
+        
+        // Hide search results AFTER we find the element
+        if (searchResults) {
+            searchResults.style.display = 'none';
+            console.log('🔍 Search results hidden');
+        }
+        
+        // Clear search input
+        if (searchInput) {
+            const searchClear = document.getElementById('search-clear');
+            searchInput.value = '';
+            if (searchClear) searchClear.style.display = 'none';
+            console.log('🔍 Search input cleared');
+        }
+        
+        // Small delay to ensure UI updates
+        setTimeout(() => {
+            // Check if element is visible
+            const rect = cachedItem.element.getBoundingClientRect();
+            console.log('📐 Element position:', {
+                top: cachedItem.element.offsetTop,
+                left: cachedItem.element.offsetLeft,
+                rect: rect
+            });
+            
+            // Scroll to element
+            scrollToElementWithOffset(cachedItem.element);
+            highlightElement(cachedItem.element, cachedItem.type);
+            
+            console.log('✅ Successfully scrolled to element');
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Error in scrollToSearchElement:', error);
     }
-    
-    console.log('📋 Cache contains', window.searchElementsCache.length, 'elements');
-    
-    // Find the element in cache
-    const cachedItem = window.searchElementsCache.find(item => item.id === elementId);
-    
-    if (!cachedItem) {
-        console.error('❌ Element not found in cache. ID:', elementId);
-        console.log('Available cache IDs:', window.searchElementsCache.map(item => item.id));
-        return;
-    }
-    
-    if (!cachedItem.element) {
-        console.error('❌ Cached item has no element:', cachedItem);
-        return;
-    }
-    
-    console.log('✅ Found cached element:', cachedItem);
-    
-    // Check if element is still in DOM
-    if (!document.body.contains(cachedItem.element)) {
-        console.error('❌ Element is no longer in DOM:', cachedItem.element);
-        return;
-    }
-    
-    // Check if element is visible
-    const rect = cachedItem.element.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) {
-        console.warn('⚠️  Element appears to be hidden or has zero dimensions');
-    }
-    
-    console.log('📐 Element position:', {
-        top: cachedItem.element.offsetTop,
-        left: cachedItem.element.offsetLeft,
-        rect: rect
-    });
-    
-    // Scroll to element
-    scrollToElementWithOffset(cachedItem.element);
-    highlightElement(cachedItem.element, cachedItem.type);
-    
-    console.log('✅ Successfully scrolled to element');
 }
 
 // Function to scroll with mobile offset consideration
@@ -346,73 +360,129 @@ function scrollToElementWithOffset(element) {
         return;
     }
     
+    console.log('📏 Starting scroll to element:', element);
+    
     const isMobile = window.innerWidth <= 768;
-    const offset = isMobile ? 140 : 100;
-    
-    // Get element position relative to document
-    let elementPosition = 0;
-    let currentElement = element;
-    
-    // Calculate cumulative offset from document top
-    while (currentElement) {
-        elementPosition += currentElement.offsetTop;
-        currentElement = currentElement.offsetParent;
-    }
-    
-    const offsetPosition = Math.max(0, elementPosition - offset);
+    const headerHeight = isMobile ? 120 : 80;
+    const extraOffset = 20; // Additional padding
+    const offset = headerHeight + extraOffset;
     
     console.log('📐 Scroll calculation:', {
-        elementOffsetTop: element.offsetTop,
-        calculatedPosition: elementPosition,
-        offset: offset,
-        finalScrollPosition: offsetPosition,
-        isMobile: isMobile
+        isMobile: isMobile,
+        headerHeight: headerHeight,
+        extraOffset: extraOffset,
+        totalOffset: offset
     });
     
-    // Try using element.scrollIntoView as fallback
     try {
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
+        // Method 1: Use scrollIntoView with offset
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
         });
         
-        // Alternative method if the above doesn't work
+        // Adjust for header after scroll
         setTimeout(() => {
-            const rect = element.getBoundingClientRect();
-            if (rect.top < 0 || rect.top > window.innerHeight) {
-                console.log('🔄 Using scrollIntoView fallback');
-                element.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start'
-                });
-            }
-        }, 100);
+            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const newScrollTop = Math.max(0, currentScrollTop - offset);
+            
+            window.scrollTo({
+                top: newScrollTop,
+                behavior: 'smooth'
+            });
+            
+            console.log('📏 Adjusted scroll position:', {
+                currentScrollTop: currentScrollTop,
+                newScrollTop: newScrollTop,
+                adjustment: currentScrollTop - newScrollTop
+            });
+        }, 300);
         
     } catch (error) {
         console.error('❌ Scroll error:', error);
-        // Final fallback
-        element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start'
-        });
+        // Final fallback - just use basic scrollIntoView
+        try {
+            element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center'
+            });
+        } catch (fallbackError) {
+            console.error('❌ Fallback scroll error:', fallbackError);
+            // Last resort - no smooth scrolling
+            element.scrollIntoView();
+        }
     }
 }
 
 // Function to highlight an element
 function highlightElement(element, type) {
+    console.log('✨ Highlighting element:', element, 'Type:', type);
+    
+    // Remove any existing highlights
+    clearPreviousHighlights();
+    
+    // Store original styles
+    const originalStyles = {
+        backgroundColor: element.style.backgroundColor || '',
+        color: element.style.color || '',
+        boxShadow: element.style.boxShadow || '',
+        transition: element.style.transition || '',
+        outline: element.style.outline || ''
+    };
+    
+    // Add highlight class for CSS-based styling
+    element.classList.add('search-highlight-element');
+    
+    // Apply theme-aware highlighting
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    
     if (type === 'developer') {
         element.style.backgroundColor = '#ff6b35';
         element.style.color = '#ffffff';
-        setTimeout(() => {
-            element.style.backgroundColor = '';
-            element.style.color = '';
-        }, 3000);
+        element.style.boxShadow = '0 0 20px rgba(255, 107, 53, 0.6)';
     } else {
-        element.style.backgroundColor = '#ffeb3b';
-        setTimeout(() => {
-            element.style.backgroundColor = '';
-        }, 3000);
+        if (isDarkMode) {
+            element.style.backgroundColor = 'rgba(255, 235, 59, 0.2)';
+            element.style.outline = '2px solid #ffeb3b';
+            element.style.boxShadow = '0 0 15px rgba(255, 235, 59, 0.4)';
+        } else {
+            element.style.backgroundColor = 'rgba(255, 235, 59, 0.4)';
+            element.style.outline = '2px solid #ff6b35';
+            element.style.boxShadow = '0 0 15px rgba(255, 107, 53, 0.3)';
+        }
     }
+    
+    element.style.transition = 'all 0.3s ease';
+    
+    // Store cleanup function
+    window.currentHighlightCleanup = () => {
+        element.classList.remove('search-highlight-element');
+        Object.keys(originalStyles).forEach(prop => {
+            element.style[prop] = originalStyles[prop];
+        });
+    };
+    
+    // Auto-remove highlight after 4 seconds
+    setTimeout(() => {
+        if (window.currentHighlightCleanup) {
+            window.currentHighlightCleanup();
+            window.currentHighlightCleanup = null;
+        }
+    }, 4000);
+}
+
+// Clear any previous highlights
+function clearPreviousHighlights() {
+    if (window.currentHighlightCleanup) {
+        window.currentHighlightCleanup();
+        window.currentHighlightCleanup = null;
+    }
+    
+    // Also remove highlight class from any elements
+    document.querySelectorAll('.search-highlight-element').forEach(el => {
+        el.classList.remove('search-highlight-element');
+    });
 }
 
 function displaySearchResults(results, query) {

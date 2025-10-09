@@ -10,6 +10,8 @@
     
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Theme Toggle Script (loaded early for no flash) -->
+    <script src="theme-toggle.js"></script>
 </head>
 <body>
     <!-- Website Notice Banner -->
@@ -99,6 +101,15 @@
                 </div>
             </div>
             
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+                <div class="theme-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </div>
+            </button>
+            
             <button class="hamburger-menu" id="hamburger-menu">
                 <img src="menuicon.png" alt="Menu" class="menu-icon">
             </button>
@@ -133,8 +144,17 @@
                     </div>
                 </div>
                 
-                <div class="nav-section">
-                    <div class="nav-section-title">News</div>
+                <div class="nav-section nav-section-with-theme">
+                    <div class="nav-section-header">
+                        <div class="nav-section-title">News</div>
+                        <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Toggle dark/light mode">
+                            <div class="theme-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
                     <a href="index.html" class="nav-section-item">Home</a>
                     <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                 </div>
@@ -391,58 +411,122 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD7I9K8ds6Px60jMm71Kt7weVAX-vhcM8w",
-            authDomain: "ehamburg-90958.firebaseapp.com",
-            projectId: "ehamburg-90958",
-            storageBucket: "ehamburg-90958.firebasestorage.app",
-            messagingSenderId: "166375320407",
-            appId: "1:166375320407:web:1e3b0b85a410522bf4ec12",
-            measurementId: "G-FLLYGR93PX"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
-
-        // Make Firebase available globally
-        window.auth = auth;
-        window.googleProvider = googleProvider;
-        window.db = db;
-        window.getDocs = getDocs;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.doc = doc;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.limit = limit;
+        console.log('🔥 Initializing Firebase...');
+        
+        let firebaseInitialized = false;
+        let initializationPromise = null;
+        
+        // Initialize Firebase with proper error handling
+        async function initializeFirebase() {
+            if (initializationPromise) {
+                return initializationPromise;
+            }
+            
+            initializationPromise = (async () => {
+                try {
+                    console.log('📦 Loading Firebase modules...');
+                    
+                    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                    const { getAuth, GoogleAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    const { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    
+                    console.log('✅ Firebase modules loaded successfully');
+                    
+                    // Your Firebase configuration
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyD7I9K8ds6Px60jMm71Kt7weVAX-vhcM8w",
+                        authDomain: "ehamburg-90958.firebaseapp.com",
+                        projectId: "ehamburg-90958",
+                        storageBucket: "ehamburg-90958.firebasestorage.app",
+                        messagingSenderId: "166375320407",
+                        appId: "1:166375320407:web:1e3b0b85a410522bf4ec12",
+                        measurementId: "G-FLLYGR93PX"
+                    };
+            
+                    // Initialize Firebase
+                    const app = initializeApp(firebaseConfig);
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+                    const googleProvider = new GoogleAuthProvider();
+                    
+                    console.log('🔥 Firebase initialized successfully');
+            
+                    // Make Firebase available globally with validation
+                    window.firebaseApp = app;
+                    window.auth = auth;
+                    window.googleProvider = googleProvider;
+                    window.db = db;
+                    window.getDocs = getDocs;
+                    window.collection = collection;
+                    window.addDoc = addDoc;
+                    window.updateDoc = updateDoc;
+                    window.doc = doc;
+                    window.query = query;
+                    window.orderBy = orderBy;
+                    window.limit = limit;
+                    
+                    // Set flag
+                    firebaseInitialized = true;
+                    window.firebaseInitialized = true;
+                    
+                    console.log('✅ Firebase globals set successfully');
+                    
+                    return { app, auth, db, getDocs, collection, addDoc, updateDoc, doc, query, orderBy, limit };
+                    
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
+                    throw error;
+                }
+            })();
+            
+            return initializationPromise;
+        }
+        
+        // Ensure Firebase is ready
+        window.ensureFirebaseReady = initializeFirebase;
 
         // Load current settings
         async function loadSettings() {
+            console.log('📥 Loading settings...');
+            
             try {
+                // Ensure Firebase is initialized
+                const firebase = await initializeFirebase();
+                const { db, collection, getDocs } = firebase;
+                
+                console.log('📄 Getting notice documents...');
                 const noticeRef = collection(db, 'notice');
                 const noticeSnapshot = await getDocs(noticeRef);
                 
                 if (!noticeSnapshot.empty) {
                     const settings = noticeSnapshot.docs[0].data();
+                    console.log('✅ Settings loaded:', settings);
+                    
                     document.getElementById('notice-enabled').checked = settings.enabled || false;
+                    
+                    // Cache the loaded settings
+                    localStorage.setItem('noticeBannerEnabled', (settings.enabled || false).toString());
+                    if (settings.text) {
+                        localStorage.setItem('noticeBannerText', settings.text);
+                    }
                     
                     // Update status display
                     updateStatusDisplay(settings);
                 } else {
+                    console.log('📄 No settings found, using defaults');
                     updateStatusDisplay({ enabled: false, lastUpdated: null });
+                    localStorage.setItem('noticeBannerEnabled', 'false');
                 }
             } catch (error) {
-                console.error('Error loading settings:', error);
+                console.error('❌ Error loading settings:', error);
                 updateStatusDisplay({ enabled: false, lastUpdated: null, error: true });
+                
+                // Try to use cached values as fallback
+                const cachedEnabled = localStorage.getItem('noticeBannerEnabled');
+                if (cachedEnabled !== null) {
+                    document.getElementById('notice-enabled').checked = cachedEnabled === 'true';
+                    console.log('📋 Using cached banner state:', cachedEnabled);
+                }
             }
         }
 
@@ -451,23 +535,31 @@
             const bannerStatus = document.getElementById('banner-status');
             const lastUpdated = document.getElementById('last-updated');
             
-            if (settings.error) {
+            if (!bannerStatus || !lastUpdated) return;
+            
+            if (settings.loading) {
+                bannerStatus.textContent = 'Loading...';
+                bannerStatus.style.color = '#007bff';
+                lastUpdated.textContent = 'Initializing...';
+            } else if (settings.error) {
                 bannerStatus.textContent = 'Error';
-                bannerStatus.style.color = '#dc3545';
+                bannerStatus.style.color = 'var(--accent-danger)';
                 lastUpdated.textContent = 'Failed to load';
             } else if (settings.enabled) {
                 bannerStatus.textContent = 'Enabled';
-                bannerStatus.style.color = '#28a745';
+                bannerStatus.style.color = 'var(--accent-success)';
             } else {
                 bannerStatus.textContent = 'Disabled';
-                bannerStatus.style.color = '#6c757d';
+                bannerStatus.style.color = 'var(--text-muted)';
             }
             
-            if (settings.lastUpdated) {
-                const date = new Date(settings.lastUpdated);
-                lastUpdated.textContent = date.toLocaleString();
-            } else {
-                lastUpdated.textContent = 'Never';
+            if (!settings.loading && !settings.error) {
+                if (settings.lastUpdated) {
+                    const date = new Date(settings.lastUpdated);
+                    lastUpdated.textContent = date.toLocaleString();
+                } else {
+                    lastUpdated.textContent = 'Never';
+                }
             }
         }
 
@@ -523,45 +615,91 @@
 
         // Save settings
         async function saveSettings() {
+            console.log('🚀 Starting saveSettings...');
+            
             try {
+                // Ensure Firebase is initialized
+                console.log('🔥 Ensuring Firebase is ready...');
+                const firebase = await initializeFirebase();
+                console.log('✅ Firebase ready, proceeding with save...');
+                
                 const enabled = document.getElementById('notice-enabled').checked;
                 
+                // Cache the state immediately for instant persistence
+                localStorage.setItem('noticeBannerEnabled', enabled.toString());
+                console.log('💾 Cached banner state:', enabled);
+                
+                // Use the Firebase instance returned from initialization
+                const { db, collection, getDocs, addDoc, updateDoc, doc } = firebase;
+                
+                console.log('📝 Getting Firebase collection...');
                 const noticeRef = collection(db, 'notice');
+                console.log('📄 Getting documents...');
                 const noticeSnapshot = await getDocs(noticeRef);
+                console.log('📊 Documents retrieved, empty?:', noticeSnapshot.empty);
                 
                 if (!noticeSnapshot.empty) {
-                    // Update existing document - only update enabled field
+                    // Update existing document
                     const docId = noticeSnapshot.docs[0].id;
                     const existingData = noticeSnapshot.docs[0].data();
+                    console.log('📄 Existing document found:', docId, existingData);
                     
                     const settings = {
-                        ...existingData, // Keep existing text and other fields
+                        ...existingData,
                         enabled: enabled,
                         lastUpdated: new Date()
                     };
                     
+                    console.log('💾 Updating document with settings:', settings);
                     await updateDoc(doc(db, 'notice', docId), settings);
+                    console.log('✅ Document updated successfully');
+                    
+                    // Cache the text
+                    if (existingData.text) {
+                        localStorage.setItem('noticeBannerText', existingData.text);
+                        console.log('💾 Cached existing text:', existingData.text);
+                    }
                 } else {
-                    // Create new document with default text
+                    // Create new document
+                    const defaultText = "Welcome to EHAMBURG DAILY!";
                     const settings = {
                         enabled: enabled,
-                        text: "Welcome to EHAMBURG DAILY!",
+                        text: defaultText,
                         lastUpdated: new Date()
                     };
+                    console.log('📝 Creating new document with settings:', settings);
                     await addDoc(noticeRef, settings);
+                    console.log('✅ New document created successfully');
+                    
+                    // Cache the default text
+                    localStorage.setItem('noticeBannerText', defaultText);
+                    console.log('💾 Cached default text:', defaultText);
                 }
                 
                 showMessage('success', 'Notice banner settings saved successfully!');
-                console.log('Settings saved:', { enabled: enabled });
+                console.log('🎉 Settings saved and cached:', { enabled: enabled });
                 
                 // Update status display
                 updateStatusDisplay({ enabled: enabled, lastUpdated: new Date() });
                 
-                // Automatically update notice banner on all pages
+                // Update notice banner on all pages
                 updateNoticeBannerOnAllPages(enabled);
+                
             } catch (error) {
-                console.error('Error saving settings:', error);
-                showMessage('error', 'Error saving settings. Please try again.');
+                console.error('❌ Error saving settings:', error);
+                console.error('Error details:', error.message, error.stack);
+                
+                let errorMessage = 'Error saving settings. Please try again.';
+                if (error.message.includes('Firebase')) {
+                    errorMessage = 'Firebase connection error. Please check your internet connection and try again.';
+                } else if (error.message.includes('permission')) {
+                    errorMessage = 'Permission denied. Please sign in and try again.';
+                }
+                
+                showMessage('error', errorMessage);
+                
+                // Update status display to show error
+                updateStatusDisplay({ error: true });
             }
         }
 
@@ -650,8 +788,54 @@
         document.getElementById('clear-cache').addEventListener('click', clearCache);
         document.getElementById('view-logs').addEventListener('click', viewLogs);
 
+        // Wait for Firebase to be fully initialized
+        let firebaseReady = false;
+        
+        // Check if Firebase is ready
+        function checkFirebaseReady() {
+            return typeof db !== 'undefined' && typeof collection !== 'undefined' && typeof getDocs !== 'undefined';
+        }
+        
+        // Wait for Firebase initialization
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (checkFirebaseReady()) {
+                        firebaseReady = true;
+                        clearInterval(checkInterval);
+                        console.log('Firebase is ready!');
+                        resolve();
+                    } else {
+                        console.log('Waiting for Firebase...');
+                    }
+                }, 100);
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    console.error('Firebase initialization timeout');
+                    resolve();
+                }, 10000);
+            });
+        }
+        
         // Load settings when page loads
-        document.addEventListener('DOMContentLoaded', loadSettings);
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🌅 DOM loaded, initializing settings page...');
+            
+            // Show loading state
+            updateStatusDisplay({ loading: true });
+            
+            // Start Firebase initialization immediately
+            initializeFirebase().then(() => {
+                console.log('🚀 Firebase ready, loading settings...');
+                loadSettings();
+            }).catch(error => {
+                console.error('❌ Firebase initialization failed during DOM load:', error);
+                // Still try to load from cache
+                loadSettings();
+            });
+        });
         
         // Initialize auth UI for settings page
         function initializeSettingsAuthUI() {

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Toggle Test - EHAMBURG DAILY</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Theme Toggle Script (loaded early for no flash) -->
+    <script src="theme-toggle.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="dark ehd logo.png" alt="EHAMBURG DAILY" class="main-logo">
+            </div>
+            
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21L16.5 16.5"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="search-input" placeholder="Search..." class="search-input">
+                    <div class="search-clear" id="search-clear" style="display: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div id="search-results" class="search-results">
+                    <div class="search-suggestions" id="search-suggestions" style="display: none;">
+                        <div class="search-category">
+                            <div class="search-category-title">Test Results</div>
+                            <div class="search-suggestion-item">Theme Toggle Test</div>
+                            <div class="search-suggestion-item">Light Mode</div>
+                            <div class="search-suggestion-item">Dark Mode</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+                <div class="theme-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <section class="test-section">
+                <div class="section-indicator">
+                    <div class="blue-line"></div>
+                    <span class="section-text">Theme Toggle Test</span>
+                </div>
+                
+                <div class="test-content">
+                    <h1>Theme Toggle Functionality Test</h1>
+                    <p>This page tests the dark/light theme toggle functionality.</p>
+                    
+                    <div class="test-buttons">
+                        <button class="test-btn" onclick="testTheme('light')">Switch to Light</button>
+                        <button class="test-btn" onclick="testTheme('dark')">Switch to Dark</button>
+                        <button class="test-btn" onclick="testTheme('auto')">Auto (System)</button>
+                    </div>
+                    
+                    <div class="theme-info">
+                        <h3>Current Theme Information:</h3>
+                        <p>Current theme: <span id="current-theme">Loading...</span></p>
+                        <p>System preference: <span id="system-theme">Loading...</span></p>
+                        <p>Stored preference: <span id="stored-theme">Loading...</span></p>
+                    </div>
+                    
+                    <div class="test-elements">
+                        <h3>Test Elements</h3>
+                        <div class="test-card">
+                            <h4>Test Card</h4>
+                            <p>This card should change colors based on the theme.</p>
+                            <input type="text" placeholder="Test input field">
+                        </div>
+                        
+                        <div class="test-search">
+                            <div class="search-input-wrapper">
+                                <input type="text" placeholder="Test search input" class="search-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <style>
+        .test-section {
+            margin: 30px 0;
+        }
+        
+        .test-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+        
+        .test-content h1 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+        
+        .test-content p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            background: var(--accent-primary);
+            color: var(--text-inverse);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .theme-info {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent-secondary);
+        }
+        
+        .theme-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .theme-info p {
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+        
+        .test-elements {
+            margin-top: 30px;
+        }
+        
+        .test-elements h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+        
+        .test-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-secondary);
+            margin: 15px 0;
+        }
+        
+        .test-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .test-card p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        .test-card input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-secondary);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .test-card input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--search-focus-shadow);
+        }
+        
+        .test-search {
+            margin: 20px 0;
+        }
+    </style>
+
+    <script>
+        function testTheme(theme) {
+            if (window.themeManager) {
+                window.themeManager.setTheme(theme);
+                updateThemeInfo();
+            } else {
+                alert('Theme manager not loaded yet!');
+            }
+        }
+        
+        function updateThemeInfo() {
+            setTimeout(() => {
+                const currentTheme = document.getElementById('current-theme');
+                const systemTheme = document.getElementById('system-theme');
+                const storedTheme = document.getElementById('stored-theme');
+                
+                if (window.themeManager) {
+                    currentTheme.textContent = window.themeManager.getCurrentTheme();
+                    systemTheme.textContent = window.themeManager.getSystemTheme();
+                    storedTheme.textContent = window.themeManager.getStoredTheme() || 'auto';
+                } else {
+                    currentTheme.textContent = 'Theme manager not available';
+                    systemTheme.textContent = 'N/A';
+                    storedTheme.textContent = 'N/A';
+                }
+            }, 100);
+        }
+        
+        // Update theme info on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateThemeInfo();
+            
+            // Listen for theme changes
+            document.addEventListener('themeChanged', (e) => {
+                console.log('Theme changed to:', e.detail.theme);
+                updateThemeInfo();
+            });
+        });
+        
+        // Update theme info periodically
+        setInterval(updateThemeInfo, 2000);
+    </script>
+</body>
+</html>

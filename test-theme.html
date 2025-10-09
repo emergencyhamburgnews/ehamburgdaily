@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Toggle Test - EHAMBURG DAILY</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="theme-toggle.js"></script>
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .test-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+        
+        .test-title {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .test-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .theme-info {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent-primary);
+        }
+        
+        .theme-status {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .color-sample {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .sample-bg-primary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-primary);
+        }
+        
+        .sample-bg-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 2px solid var(--border-secondary);
+        }
+        
+        .sample-accent {
+            background: var(--accent-primary);
+            color: var(--text-inverse);
+        }
+        
+        .sample-search {
+            background: var(--search-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--search-border);
+        }
+        
+        .toggle-demo {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-demo .theme-toggle {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="dark ehd logo.png" alt="EHAMBURG DAILY" class="main-logo">
+            </div>
+            
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21L16.5 16.5"></path>
+                        </svg>
+                    </div>
+                    <input type="text" placeholder="Test search input..." class="search-input">
+                    <div class="search-clear" style="display: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+                <div class="theme-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </div>
+            </button>
+            
+            <button class="hamburger-menu">
+                <img src="menuicon.png" alt="Menu" class="menu-icon">
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="test-container">
+            <div class="test-card">
+                <h1 class="test-title">Theme Toggle Test Page</h1>
+                <p class="test-text">
+                    This page demonstrates the theme toggle functionality for EHAMBURG DAILY. 
+                    Click the theme toggle button in the header to switch between light and dark modes.
+                </p>
+                
+                <div class="theme-info">
+                    <p><strong>Current Theme:</strong> <span class="theme-status" id="current-theme">Loading...</span></p>
+                    <p><strong>Theme Source:</strong> <span id="theme-source">Loading...</span></p>
+                </div>
+            </div>
+
+            <div class="test-card">
+                <h2 class="test-title">Color Samples</h2>
+                <p class="test-text">These samples show how different UI elements adapt to the current theme:</p>
+                
+                <div class="color-grid">
+                    <div class="color-sample sample-bg-primary">
+                        <h3>Primary Background</h3>
+                        <p>Main content areas</p>
+                    </div>
+                    
+                    <div class="color-sample sample-bg-secondary">
+                        <h3>Secondary Background</h3>
+                        <p>Cards and panels</p>
+                    </div>
+                    
+                    <div class="color-sample sample-accent">
+                        <h3>Accent Color</h3>
+                        <p>Links and highlights</p>
+                    </div>
+                    
+                    <div class="color-sample sample-search">
+                        <h3>Search Background</h3>
+                        <p>Input fields</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card">
+                <h2 class="test-title">Toggle Buttons</h2>
+                <p class="test-text">Multiple theme toggle buttons (desktop and mobile styles):</p>
+                
+                <div class="toggle-demo">
+                    <button class="theme-toggle" aria-label="Toggle theme" title="Desktop toggle">
+                        <div class="theme-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </div>
+                    </button>
+                    
+                    <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Mobile toggle">
+                        <div class="theme-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </div>
+                    </button>
+                    
+                    <p style="margin: 0;">Click any toggle to test!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize theme manager
+        const themeManager = new ThemeManager();
+        
+        // Update theme status display
+        function updateThemeStatus() {
+            const currentTheme = themeManager.getCurrentTheme();
+            const storedTheme = localStorage.getItem('theme-preference');
+            
+            document.getElementById('current-theme').textContent = currentTheme;
+            document.getElementById('theme-source').textContent = storedTheme 
+                ? `User preference (${storedTheme})`
+                : 'System preference';
+        }
+        
+        // Listen for theme changes
+        document.addEventListener('themeChanged', updateThemeStatus);
+        
+        // Initial status update
+        document.addEventListener('DOMContentLoaded', updateThemeStatus);
+    </script>
+</body>
+</html>

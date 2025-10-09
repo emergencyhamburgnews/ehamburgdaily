@@ -74,53 +74,82 @@ function logOperation(operation, status, data = null, error = null) {
     }
 }
 
-// Show user-friendly error message
-function showUserError(message, details = null) {
+// Show user-friendly error message using settings page design
+function showUserError(message, details = null, duration = 5000) {
     console.error('User Error:', message, details);
     
-    // Create a user-friendly notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #f44336;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        max-width: 300px;
-        opacity: 0;
-        transform: translateX(100px);
-        transition: all 0.3s ease;
+    // Only show non-critical errors to user
+    // Skip news loading errors as they're handled gracefully with fallbacks
+    const criticalErrors = [
+        'Failed to initialize application',
+        'Loading is taking longer than expected'
+    ];
+    
+    const isCritical = criticalErrors.some(error => message.includes(error));
+    if (!isCritical && message.includes('news')) {
+        // Don't show news loading errors - they're annoying and handled gracefully
+        return;
+    }
+    
+    showMessage('error', message, duration);
+}
+
+// Show message using settings page design pattern
+function showMessage(type, message, duration = 5000) {
+    // Create message container if it doesn't exist
+    let container = document.getElementById('message-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'message-container';
+        container.className = 'message-container';
+        document.body.appendChild(container);
+    }
+    
+    const messageId = 'msg-' + Date.now();
+    
+    const toast = document.createElement('div');
+    toast.id = messageId;
+    toast.className = `message-toast ${type}`;
+    
+    let iconSvg = '';
+    if (type === 'success') {
+        iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"></polyline></svg>';
+    } else if (type === 'error') {
+        iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+    } else {
+        iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+    }
+    
+    toast.innerHTML = `
+        <div class="message-icon">${iconSvg}</div>
+        <div class="message-text">${message}</div>
+        <button class="message-close" onclick="removeMessage('${messageId}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     `;
-    notification.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 4px;">⚠️ Error</div>
-        <div>${message}</div>
-    `;
     
-    document.body.appendChild(notification);
+    container.appendChild(toast);
     
-    // Animate in
+    // Auto remove after duration
     setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Remove after 5 seconds
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100px)';
+        removeMessage(messageId);
+    }, duration);
+}
+
+// Remove message toast
+function removeMessage(messageId) {
+    const message = document.getElementById(messageId);
+    if (message) {
+        message.classList.add('removing');
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
             }
         }, 300);
-    }, 5000);
+    }
 }
 
 // Removed old featured article function - using single news system now
@@ -461,9 +490,9 @@ function showLoading(operationId = 'default') {
         
         loadingTimeout = setTimeout(() => {
             logOperation('loadingManager', 'loading_timeout_reached');
-            showUserError('Loading is taking longer than expected. Please refresh the page.');
+            console.warn('Loading timeout reached - force hiding loading spinner');
             hideLoading('timeout');
-        }, 30000);
+        }, 20000);
     }
 }
 
@@ -662,18 +691,16 @@ async function loadAllNews() {
     } catch (error) {
         logOperation('loadAllNews', 'error', null, error);
         
+        // Log errors for debugging but don't show annoying user messages
+        // News loading errors are handled gracefully with placeholder content
         if (error.message.includes('timed out')) {
-            showUserError('Loading news is taking longer than expected. Please check your connection and try again.');
-            console.error('News loading timed out:', error);
+            console.warn('News loading timed out - showing placeholder content:', error);
         } else if (error.code === 'permission-denied') {
-            showUserError('Unable to access news content. Please try again later.');
-            console.error('Firebase permission denied:', error);
+            console.warn('News permission denied - showing placeholder content:', error);
         } else if (error.code === 'unavailable') {
-            showUserError('News service is temporarily unavailable. Please try again in a few moments.');
-            console.error('Firebase unavailable:', error);
+            console.warn('News service unavailable - showing placeholder content:', error);
         } else {
-            showUserError('Failed to load news. Please refresh the page.');
-            console.error('Unexpected error loading news:', error);
+            console.error('Unexpected error loading news - showing placeholder content:', error);
         }
         
         // Show placeholder content as fallback
@@ -1535,47 +1562,9 @@ async function copyArticleLink(articleId) {
     console.log('Article link copied:', articleUrl);
 }
 
-// Show share notification
+// Show share notification using consistent design
 function showShareNotification(message) {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        opacity: 0;
-        transform: translateX(100px);
-        transition: all 0.3s ease;
-    `;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100px)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
+    showMessage('success', message, 3000);
 }
 
 // Initialize the app
@@ -1645,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Make functions available globally for testing
+    // Make functions available globally for testing and notifications
     window.testBannerDisplay = testBannerDisplay;
     window.refreshBanner = refreshBanner;
     window.loadMessageBanner = loadMessageBanner;
@@ -1654,6 +1643,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.copyArticleLink = copyArticleLink;
     window.handleTouchStart = handleTouchStart;
     window.handleTouchEnd = handleTouchEnd;
+    window.removeMessage = removeMessage;
+    window.showMessage = showMessage;
 });
 
 // Handle window resize for responsive behavior - handled in DOMContentLoaded

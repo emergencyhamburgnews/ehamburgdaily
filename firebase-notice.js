@@ -34,6 +34,10 @@ async function loadNoticeBanner() {
         console.log('Notice data from Firebase:', noticeData);
         
         if (noticeData && noticeData.enabled) {
+            // Cache the enabled state in localStorage
+            localStorage.setItem('noticeBannerEnabled', 'true');
+            localStorage.setItem('noticeBannerText', noticeData.text || 'Notice');
+            
             const noticeBanner = document.getElementById('website-notice');
             const noticeText = noticeBanner.querySelector('.notice-text');
             const noticeIcon = noticeBanner.querySelector('.notice-icon');
@@ -62,9 +66,12 @@ async function loadNoticeBanner() {
                 header.classList.add('with-notice');
                 mainContent.classList.add('with-notice');
                 
-                console.log('Notice banner displayed successfully');
+                console.log('Notice banner displayed successfully and cached');
             }
         } else {
+            // Cache the disabled state in localStorage
+            localStorage.setItem('noticeBannerEnabled', 'false');
+            
             console.log('Notice banner disabled or no data found - hiding banner');
             const noticeBanner = document.getElementById('website-notice');
             if (noticeBanner) {
@@ -131,34 +138,54 @@ function forceShowNoticeBanner(text = 'Test notice from console', icon = '⚠️
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing notice banner...');
 
-    // Show loading banner immediately
-    console.log('Showing loading banner...');
+    // Check if we have cached banner state in localStorage
+    const cachedBannerState = localStorage.getItem('noticeBannerEnabled');
+    console.log('Cached banner state:', cachedBannerState);
+    
     const banner = document.getElementById('website-notice');
     if (banner) {
-        console.log('Notice banner element found:', banner);
-        banner.style.display = 'block';
-        banner.style.background = '#2196F3';
-        banner.style.color = 'white';
-        const text = banner.querySelector('.notice-text');
-        if (text) {
-            text.textContent = 'Loading...';
-            text.style.color = 'white';
-            console.log('Loading banner displayed');
+        // If we have cached state, use it immediately while Firebase loads
+        if (cachedBannerState === 'true') {
+            console.log('Using cached enabled state');
+            banner.style.display = 'block';
+            banner.style.background = '#2196F3';
+            banner.style.color = 'white';
+            const text = banner.querySelector('.notice-text');
+            if (text) {
+                text.textContent = 'Loading notice...';
+                text.style.color = 'white';
+            }
+        } else if (cachedBannerState === 'false') {
+            console.log('Using cached disabled state');
+            banner.style.display = 'none';
+        } else {
+            // No cached state, show loading
+            console.log('No cached state, showing loading banner...');
+            banner.style.display = 'block';
+            banner.style.background = '#2196F3';
+            banner.style.color = 'white';
+            const text = banner.querySelector('.notice-text');
+            if (text) {
+                text.textContent = 'Loading...';
+                text.style.color = 'white';
+            }
         }
     }
 
-    // Then load from Firebase
+    // Then load from Firebase to get the most up-to-date state
     loadNoticeBanner();
 
-    // Hide banner if Firebase fails to load within 5 seconds
+    // Hide banner if Firebase fails to load within 8 seconds
     setTimeout(() => {
         const banner = document.getElementById('website-notice');
         const text = banner ? banner.querySelector('.notice-text') : null;
-        if (text && text.textContent === 'Loading...') {
-            console.log('Firebase loading timeout - hiding banner');
-            banner.style.display = 'none';
+        if (text && (text.textContent === 'Loading...' || text.textContent === 'Loading notice...')) {
+            console.log('Firebase loading timeout - using cached state or hiding banner');
+            if (cachedBannerState !== 'true') {
+                banner.style.display = 'none';
+            }
         }
-    }, 5000);
+    }, 8000);
     
     // Fix mobile browser jumping
     fixMobileScrollJumping();
