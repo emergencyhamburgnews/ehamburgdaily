@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Toggle & Banner Fix Verification Guide</title>
+    <script src="theme-toggle.js"></script>
+    <script src="debug-banner.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-card);
+        }
+        .test-button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #e55a2b;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .code {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Theme Toggle & Banner Fix Verification Guide</h1>
+    
+    <div class="section">
+        <h2>📱 Mobile Theme Toggle Test</h2>
+        <p>Test the mobile theme toggle functionality:</p>
+        
+        <!-- Mobile Theme Toggle (exactly like in actual pages) -->
+        <div class="mobile-theme-section" style="margin: 20px 0;">
+            <div class="mobile-theme-content">
+                <span class="mobile-theme-label">Theme</span>
+                <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Toggle dark/light mode">
+                    <div class="theme-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="white" fill="none"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <p><strong>Current theme:</strong> <span id="current-theme">light</span></p>
+        
+        <button class="test-button" onclick="runThemeTests()">🧪 Run Theme Tests</button>
+        <button class="test-button" onclick="testMobileTheme()">📱 Test Mobile Toggle</button>
+        
+        <div id="theme-test-results"></div>
+    </div>
+    
+    <div class="section">
+        <h2>🚨 Banner Save Issue Diagnosis</h2>
+        <p>Diagnose and fix the Firebase banner save error:</p>
+        
+        <button class="test-button" onclick="debugBannerIssue()">🔍 Debug Banner Issue</button>
+        
+        <div id="banner-test-results"></div>
+        
+        <h3>Common Solutions:</h3>
+        <div class="status info">
+            <strong>1. Firebase Authentication:</strong> Make sure you're signed in to the website before trying to save banner settings.
+        </div>
+        <div class="status info">
+            <strong>2. Firestore Rules:</strong> Ensure Firebase Firestore security rules allow authenticated users to write to the 'notice' collection.
+        </div>
+        <div class="status info">
+            <strong>3. Network Issues:</strong> Check if there are any network connectivity issues or firewall blocks.
+        </div>
+        
+        <h3>Manual Debug Steps:</h3>
+        <div class="code">
+            <strong>1. Open browser console (F12)</strong><br>
+            <strong>2. Run:</strong> debugBannerIssue()<br>
+            <strong>3. Check the detailed error messages</strong><br>
+            <strong>4. If authentication failed:</strong> Sign in first<br>
+            <strong>5. If Firestore rules failed:</strong> Update Firebase security rules
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>✅ Pages to Verify</h2>
+        <p>Check that the mobile theme toggle appears on all these pages:</p>
+        <ul>
+            <li><a href="index.html">🏠 Homepage</a></li>
+            <li><a href="about.html">ℹ️ About</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+            <li><a href="credits.html">👥 Credits</a></li>
+            <li><a href="emergency-hamburg.html">🚨 Emergency Hamburg</a></li>
+        </ul>
+        
+        <div class="status info">
+            <strong>What to look for:</strong><br>
+            • Orange theme toggle section at the top of mobile menu<br>
+            • "Theme" label with WHITE toggle icon button (clearly visible)<br>
+            • Theme switches when clicked<br>
+            • Icon changes between sun (light) and moon (dark) - both WHITE<br>
+            • Theme persists when navigating between pages<br>
+            • No invisible or hard-to-see icons
+        </div>
+    </div>
+    
+    <script>
+        // Theme status update
+        function updateThemeStatus() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            document.getElementById('current-theme').textContent = currentTheme;
+        }
+        
+        // Theme tests
+        function runThemeTests() {
+            const results = document.getElementById('theme-test-results');
+            let html = '<h3>🧪 Test Results:</h3>';
+            
+            // Check if theme manager exists
+            if (typeof themeManager !== 'undefined') {
+                html += '<div class="status success">✅ ThemeManager instance found</div>';
+                html += `<div class="status info">Current theme: ${themeManager.theme}</div>`;
+            } else {
+                html += '<div class="status error">❌ ThemeManager instance not found</div>';
+            }
+            
+            // Check theme toggle buttons
+            const toggleButtons = document.querySelectorAll('.theme-toggle');
+            html += `<div class="status ${toggleButtons.length > 0 ? 'success' : 'error'}">
+                ${toggleButtons.length > 0 ? '✅' : '❌'} Found ${toggleButtons.length} theme toggle button(s)
+            </div>`;
+            
+            // Check mobile theme toggle specifically
+            const mobileToggle = document.querySelector('.theme-toggle-mobile');
+            html += `<div class="status ${mobileToggle ? 'success' : 'error'}">
+                ${mobileToggle ? '✅' : '❌'} Mobile theme toggle ${mobileToggle ? 'found' : 'missing'}
+            </div>`;
+            
+            // Check local storage
+            const storedTheme = localStorage.getItem('theme-preference');
+            html += `<div class="status info">💾 Stored theme preference: ${storedTheme || 'none (using system default)'}</div>`;
+            
+            results.innerHTML = html;
+        }
+        
+        function testMobileTheme() {
+            const mobileToggle = document.querySelector('.theme-toggle-mobile');
+            if (mobileToggle) {
+                mobileToggle.click();
+                setTimeout(() => {
+                    updateThemeStatus();
+                    const results = document.getElementById('theme-test-results');
+                    results.innerHTML += '<div class="status success">✅ Mobile theme toggle clicked - check if theme changed</div>';
+                }, 100);
+            } else {
+                const results = document.getElementById('theme-test-results');
+                results.innerHTML = '<div class="status error">❌ Mobile theme toggle not found</div>';
+            }
+        }
+        
+        // Banner debug wrapper
+        function debugBannerIssue() {
+            const results = document.getElementById('banner-test-results');
+            results.innerHTML = '<div class="status info">🔍 Running banner diagnostics... (check console for detailed output)</div>';
+            
+            // Call the debug function from debug-banner.js
+            if (typeof window.debugBannerIssue === 'function') {
+                try {
+                    window.debugBannerIssue();
+                    results.innerHTML += '<div class="status success">✅ Debug function executed - check console for results</div>';
+                } catch (error) {
+                    results.innerHTML += `<div class="status error">❌ Debug function error: ${error.message}</div>`;
+                }
+            } else {
+                results.innerHTML = '<div class="status error">❌ Debug function not found - ensure debug-banner.js is loaded</div>';
+            }
+        }
+        
+        // Auto-update theme status
+        const observer = new MutationObserver(updateThemeStatus);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+        });
+        
+        // Initial setup
+        window.addEventListener('load', function() {
+            updateThemeStatus();
+            runThemeTests();
+        });
+    </script>
+</body>
+</html>

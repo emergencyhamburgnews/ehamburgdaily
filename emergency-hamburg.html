@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Theme Toggle Script (loaded early for no flash) -->
     <script src="theme-toggle.js"></script>
+    <!-- Mobile Theme Toggle Script -->
+    <script src="mobile-theme-toggle.js"></script>
 </head>
 <body>
     <!-- Website Notice Banner -->
@@ -112,6 +114,17 @@
             </button>
             <!-- Mobile Navigation Menu -->
             <div class="nav-mobile" id="nav-mobile">
+                
+                <!-- Theme Section -->
+                <div class="nav-section">
+                    <div class="nav-section-header">
+                        <div class="nav-section-title">Theme</div>
+                        <button class="mobile-theme-toggle" onclick="toggleMobileTheme()" aria-label="Toggle theme" title="Toggle dark/light mode">
+                            <span class="mobile-theme-icon">🌙</span>
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Mobile Authentication -->
                 <div class="auth-login-btn auth-login-btn-mobile" onclick="authSystem.showLoginModal()">
                     <div class="auth-mobile-login-content">
@@ -141,17 +154,8 @@
                     </div>
                 </div>
                 
-                <div class="nav-section nav-section-with-theme">
-                    <div class="nav-section-header">
-                        <div class="nav-section-title">News</div>
-                        <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Toggle dark/light mode">
-                            <div class="theme-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                                </svg>
-                            </div>
-                        </button>
-                    </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">News</div>
                     <a href="index.html" class="nav-section-item">Home</a>
                     <a href="index.html#game-update" class="nav-section-item">Game Updates</a>
                 </div>

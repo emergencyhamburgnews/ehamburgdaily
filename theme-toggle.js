@@ -123,7 +123,7 @@ class ThemeManager {
     }
 
     updateToggleButtons(theme) {
-        const toggleButtons = document.querySelectorAll('.theme-toggle');
+        const toggleButtons = document.querySelectorAll('.theme-toggle, .theme-toggle-mobile');
         toggleButtons.forEach(button => {
             const icon = button.querySelector('.theme-icon');
             if (theme === 'dark') {
@@ -131,8 +131,11 @@ class ThemeManager {
                 button.setAttribute('aria-label', 'Switch to light mode');
                 button.title = 'Switch to light mode';
                 if (icon) {
+                    // Preserve existing icon size (mobile uses 28x28, desktop uses 18x18)
+                    const existingSvg = icon.querySelector('svg');
+                    const iconSize = existingSvg ? existingSvg.getAttribute('width') || '18' : '18';
                     icon.innerHTML = `
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"></circle>
                             <line x1="12" y1="1" x2="12" y2="3"></line>
                             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -150,8 +153,11 @@ class ThemeManager {
                 button.setAttribute('aria-label', 'Switch to dark mode');
                 button.title = 'Switch to dark mode';
                 if (icon) {
+                    // Preserve existing icon size (mobile uses 28x28, desktop uses 18x18)
+                    const existingSvg = icon.querySelector('svg');
+                    const iconSize = existingSvg ? existingSvg.getAttribute('width') || '18' : '18';
                     icon.innerHTML = `
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                         </svg>
                     `;
@@ -177,12 +183,14 @@ class ThemeManager {
 
     setupToggleButtons() {
         try {
-            const toggleButtons = document.querySelectorAll('.theme-toggle');
+            const toggleButtons = document.querySelectorAll('.theme-toggle, .theme-toggle-mobile');
             
             if (toggleButtons.length === 0) {
                 console.warn('No theme toggle buttons found');
                 return;
             }
+            
+            console.log(`Found ${toggleButtons.length} theme toggle buttons`);
             
             toggleButtons.forEach(button => {
                 // Remove existing listeners to prevent duplicates
@@ -192,6 +200,8 @@ class ThemeManager {
                 // Add new listeners
                 button.addEventListener('click', this.handleToggleClick.bind(this));
                 button.addEventListener('keydown', this.handleToggleKeydown.bind(this));
+                
+                console.log('Theme toggle button setup:', button.className);
             });
 
             // Initial button state update

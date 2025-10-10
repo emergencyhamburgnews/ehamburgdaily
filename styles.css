@@ -116,6 +116,37 @@
                 box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Global Custom Scrollbar Styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+    opacity: 0.8;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #e55a2b;
+    opacity: 1;
+}
+
+*::-webkit-scrollbar-corner {
+    background: var(--bg-secondary);
+}
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -438,13 +469,100 @@ body {
     display: inline-block;
 }
 
-.nav-section-with-theme .theme-toggle-mobile {
-    width: 40px;
-    height: 40px;
+/* Theme toggle button in navigation header */
+.nav-section-header .theme-toggle-mobile {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-secondary);
     padding: 8px;
     margin: 0;
+    border-radius: 6px;
+    width: auto;
+    height: auto;
+}
+
+.nav-section-header .theme-toggle-mobile:hover {
+    background: var(--bg-hover);
+    color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
+.nav-section-header .theme-toggle-mobile.active {
+    background: var(--bg-active);
+    color: var(--accent-primary);
+}
+
+.nav-section-header .theme-toggle-mobile .theme-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.nav-section-header .theme-toggle-mobile:hover .theme-icon {
+    transform: rotate(20deg);
+}
+
+/* Ensure SVG icons are visible */
+.nav-section-header .theme-toggle-mobile svg {
+    color: inherit;
+    stroke: currentColor;
+    fill: none;
+}
+
+.nav-section-header .theme-toggle-mobile path,
+.nav-section-header .theme-toggle-mobile circle,
+.nav-section-header .theme-toggle-mobile line {
+    stroke: currentColor;
+    fill: none;
+}
+
+/* Simple Mobile Theme Toggle with no animations */
+.mobile-theme-toggle {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin: 0;
+    min-width: 50px;
+    min-height: 36px;
+    /* NO transitions or animations */
+}
+
+.mobile-theme-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+    /* NO transform or animations */
+}
+
+.mobile-theme-toggle:active {
+    background: var(--bg-active);
+}
+
+.mobile-theme-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: block;
+    /* NO transitions */
+}
+
+.nav-section-with-theme .theme-toggle-mobile {
+    width: 52px;
+    height: 52px;
+    padding: 11px;
+    margin: 0;
     flex-shrink: 0;
-    margin-left: 8px;
+    margin-left: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 /* Mobile Theme Header - Legacy (can be removed) */
@@ -472,10 +590,10 @@ body {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: white;
-    padding: 8px;
+    padding: 10px;
     margin: 0;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     box-shadow: 0 3px 12px rgba(255, 107, 53, 0.4);
 }
 
@@ -495,12 +613,125 @@ body {
 }
 
 .theme-toggle-mobile .theme-icon {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     transition: transform 0.3s ease;
 }
 
+.theme-toggle-mobile:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 4px rgba(255, 107, 53, 0.5);
+}
+
 .theme-toggle-mobile:hover .theme-icon {
+    transform: rotate(20deg);
+}
+
+/* Mobile Theme Toggle Section - Clean and Simple */
+.mobile-theme-section {
+    background: var(--accent-primary);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-secondary);
+    position: relative;
+}
+
+.mobile-theme-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-primary) 50%, #007bff 50%, #007bff 100%);
+}
+
+.mobile-theme-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+}
+
+.mobile-theme-label {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.mobile-theme-section .theme-toggle-mobile {
+    background: var(--accent-primary);
+    border: 2px solid var(--accent-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white !important;
+    padding: 10px;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 3px 12px rgba(255, 107, 53, 0.4);
+}
+
+.mobile-theme-section .theme-toggle-mobile * {
+    color: white !important;
+    stroke: white !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile:hover {
+    background: #e55a2b;
+    color: var(--text-inverse);
+    border-color: #e55a2b;
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.6);
+}
+
+.mobile-theme-section .theme-toggle-mobile:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.5);
+}
+
+.mobile-theme-section .theme-icon {
+    width: 26px;
+    height: 26px;
+    transition: transform 0.3s ease;
+    color: white !important;
+}
+
+.mobile-theme-section .theme-icon svg {
+    color: white !important;
+    stroke: white !important;
+    fill: none !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile svg {
+    color: white !important;
+    stroke: white !important;
+    fill: none !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile path {
+    stroke: white !important;
+    color: white !important;
+    fill: none !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile circle {
+    stroke: white !important;
+    color: white !important;
+    fill: none !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile line {
+    stroke: white !important;
+    color: white !important;
+}
+
+.mobile-theme-section .theme-toggle-mobile:hover .theme-icon {
     transform: rotate(20deg);
 }
 
@@ -1892,6 +2123,30 @@ mark {
     border-left: 1px solid var(--mobile-nav-border);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-primary) transparent;
+}
+
+/* Custom Scrollbar for Mobile Navigation */
+.nav-mobile::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-mobile::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-mobile::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.nav-mobile::-webkit-scrollbar-thumb:hover {
+    background: #e55a2b;
+    opacity: 1;
 }
 
 .nav-mobile.active {
@@ -1919,7 +2174,7 @@ mark {
 }
 
 .nav-mobile .nav-section {
-    padding: 24px 28px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border-secondary);
     position: relative;
 }
@@ -1979,8 +2234,8 @@ mark {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: var(--bg-tertiary);
     text-decoration: none;
@@ -1988,8 +2243,8 @@ mark {
 }
 
 .nav-mobile .social-link img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
 }
 
@@ -2879,9 +3134,9 @@ mark {
         grid-area: menu !important;
         justify-self: center !important;
         display: flex !important;
-        width: 42px !important;
-        height: 42px !important;
-        min-width: 42px !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
         flex-shrink: 0 !important;
         align-items: center !important;
         justify-content: center !important;

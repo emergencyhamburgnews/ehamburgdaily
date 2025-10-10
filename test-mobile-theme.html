@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Theme Toggle Test</title>
+    <script src="theme-toggle.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>Mobile Theme Toggle Test</h1>
+        <p>This page tests the mobile theme toggle functionality.</p>
+        
+        <!-- Mobile Theme Toggle Section -->
+        <div class="mobile-theme-section">
+            <div class="mobile-theme-content">
+                <span class="mobile-theme-label">Theme</span>
+                <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Toggle dark/light mode">
+                    <div class="theme-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="white" fill="none"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <p>Current theme: <span id="current-theme">light</span></p>
+            <button onclick="testTheme()">Test Theme Toggle Programmatically</button>
+        </div>
+    </div>
+    
+    <script>
+        function testTheme() {
+            console.log('Testing theme toggle...');
+            console.log('Current theme:', document.documentElement.getAttribute('data-theme') || 'light');
+            console.log('Theme buttons found:', document.querySelectorAll('.theme-toggle').length);
+            
+            // Update display
+            const currentThemeSpan = document.getElementById('current-theme');
+            currentThemeSpan.textContent = document.documentElement.getAttribute('data-theme') || 'light';
+            
+            // Check if theme manager is working
+            if (typeof themeManager !== 'undefined') {
+                console.log('ThemeManager instance exists');
+                console.log('ThemeManager current theme:', themeManager.theme);
+            } else {
+                console.error('ThemeManager instance not found');
+            }
+        }
+        
+        // Auto-update current theme display
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'data-theme') {
+                    const currentThemeSpan = document.getElementById('current-theme');
+                    currentThemeSpan.textContent = document.documentElement.getAttribute('data-theme') || 'light';
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+        });
+        
+        // Initial theme display
+        window.addEventListener('load', function() {
+            testTheme();
+        });
+    </script>
+</body>
+</html>

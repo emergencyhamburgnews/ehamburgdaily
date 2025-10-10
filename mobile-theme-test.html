@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Theme Test - EHAMBURG DAILY</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme-toggle.js"></script>
+    <script src="mobile-theme-toggle.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center; color: var(--text-primary); margin: 20px;">Mobile Theme Toggle Test</h1>
+    
+    <!-- Mobile Navigation Test -->
+    <div style="background: var(--bg-card); padding: 20px; margin: 20px; border-radius: 8px; border: 1px solid var(--border-primary);">
+        <h2 style="color: var(--text-primary); margin-bottom: 15px;">Mobile Navigation Theme Section</h2>
+        
+        <!-- Theme Section -->
+        <div class="nav-section">
+            <div class="nav-section-header">
+                <div class="nav-section-title">Theme</div>
+                <button class="mobile-theme-toggle" onclick="toggleMobileTheme()" aria-label="Toggle theme" title="Toggle dark/light mode">
+                    <span class="mobile-theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); padding: 20px; margin: 20px; border-radius: 8px;">
+        <h3 style="color: var(--text-primary);">Theme Colors Test</h3>
+        <p style="color: var(--text-secondary);">This should change colors when you toggle the theme using the button above.</p>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <div style="background: var(--accent-primary); color: white; padding: 10px; border-radius: 4px;">Primary</div>
+            <div style="background: var(--bg-hover); color: var(--text-primary); padding: 10px; border-radius: 4px; border: 1px solid var(--border-primary);">Hover</div>
+        </div>
+    </div>
+
+    <script>
+        // Test script to show current theme state
+        function showThemeInfo() {
+            const html = document.documentElement;
+            const isDark = html.hasAttribute('data-theme') && html.getAttribute('data-theme') === 'dark';
+            const themeInfo = document.getElementById('theme-info');
+            if (themeInfo) {
+                themeInfo.textContent = `Current theme: ${isDark ? 'Dark' : 'Light'}`;
+                themeInfo.style.color = 'var(--text-primary)';
+            }
+        }
+
+        // Show theme info on load and after changes
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const testArea = document.querySelector('div[style*="background: var(--bg-secondary)"]');
+                if (testArea) {
+                    const infoDiv = document.createElement('div');
+                    infoDiv.id = 'theme-info';
+                    infoDiv.style.marginTop = '10px';
+                    infoDiv.style.padding = '5px';
+                    infoDiv.style.fontWeight = 'bold';
+                    testArea.appendChild(infoDiv);
+                    showThemeInfo();
+                }
+            }, 500);
+        });
+
+        // Override toggleMobileTheme to add our test info update
+        const originalToggle = window.toggleMobileTheme;
+        window.toggleMobileTheme = function() {
+            if (originalToggle) originalToggle();
+            setTimeout(showThemeInfo, 100);
+        };
+    </script>
+</body>
+</html>

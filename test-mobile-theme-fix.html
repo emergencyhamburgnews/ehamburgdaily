@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mobile Theme Toggle</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme-toggle.js"></script>
+    <style>
+        body {
+            margin: 20px;
+            font-family: Inter, sans-serif;
+        }
+        .test-section {
+            border: 2px solid var(--accent-primary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .theme-test {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 15px;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mobile Theme Toggle Test</h1>
+    
+    <div class="test-section">
+        <h2>Desktop Theme Toggle</h2>
+        <button class="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+            <div class="theme-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </div>
+        </button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Mobile Navigation Section with Theme Toggle</h2>
+        <div class="nav-section">
+            <div class="nav-section-header">
+                <div class="nav-section-title">Theme</div>
+                <button class="theme-toggle theme-toggle-mobile" aria-label="Toggle theme" title="Toggle dark/light mode">
+                    <div class="theme-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Theme Test</h2>
+        <div class="theme-test">
+            <p>This box should change colors when you toggle the theme.</p>
+            <p>Background: <span style="background: var(--bg-card); padding: 2px 8px; border: 1px solid var(--border-primary);">Card Background</span></p>
+            <p>Text: <span style="color: var(--text-primary);">Primary Text</span></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded');
+            console.log('Desktop toggle buttons:', document.querySelectorAll('.theme-toggle').length);
+            console.log('Mobile toggle buttons:', document.querySelectorAll('.theme-toggle-mobile').length);
+            console.log('All toggle buttons:', document.querySelectorAll('.theme-toggle, .theme-toggle-mobile').length);
+            
+            // Test if buttons are working
+            const buttons = document.querySelectorAll('.theme-toggle, .theme-toggle-mobile');
+            buttons.forEach((btn, index) => {
+                console.log(`Button ${index + 1}:`, btn.outerHTML);
+            });
+        });
+    </script>
+</body>
+</html>
